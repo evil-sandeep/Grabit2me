@@ -1,25 +1,12 @@
 'use client';
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Loader2, Moon, Sun } from 'lucide-react';
+import { Moon, Sun } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect } from 'react';
-
-interface MediaResponse {
-  type: 'video' | 'image';
-  mediaUrl: string;
-  title?: string;
-  description?: string;
-}
+import Link from 'next/link';
 
 export default function Home() {
-  const [url, setUrl] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [media, setMedia] = useState<MediaResponse | null>(null);
-  const [error, setError] = useState('');
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
@@ -30,59 +17,6 @@ export default function Home() {
   const toggleDarkMode = () => {
     document.documentElement.classList.toggle('dark');
     setDarkMode(!darkMode);
-  };
-
-  const handleFetchMedia = async () => {
-    if (!url.trim()) {
-      setError('Please enter an Instagram URL');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setMedia(null);
-
-    try {
-      const response = await fetch('/api/instagram', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url: url.trim() }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch media');
-      }
-
-      setMedia(data);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleDownload = async () => {
-    if (!media) return;
-    
-    try {
-      // Use our download API endpoint to proxy the media
-      const downloadUrl = `/api/download?url=${encodeURIComponent(media.mediaUrl)}&type=${media.type}`;
-      
-      // Create a temporary anchor element to trigger download
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `instagram-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (error) {
-      console.error('Download failed:', error);
-      alert('Download failed. Please try again.');
-    }
   };
 
   return (
@@ -113,9 +47,9 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="pt-20 pb-8 px-4">
-        <div className="max-w-md mx-auto">
+        <div className="max-w-2xl mx-auto">
           {/* Hero Card */}
-          <Card className="overflow-hidden border-0 shadow-2xl mb-6 bg-linear-to-br from-purple-600 via-pink-600 to-red-600">
+          <Card className="overflow-hidden border-0 shadow-2xl mb-8 bg-linear-to-br from-purple-600 via-pink-600 to-red-600">
             <CardContent className="p-8 text-center text-white">
               <div className="mb-4">
                 <div className="inline-block">
@@ -125,108 +59,70 @@ export default function Home() {
                 </div>
               </div>
               <h1 className="text-3xl font-bold mb-2">Your Ultimate</h1>
-              <h2 className="text-4xl font-extrabold mb-4">Downloader</h2>
+              <h2 className="text-4xl font-extrabold mb-4">Social Media Downloader</h2>
               <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">VidDown</span> lets you download videos
-                <br />from Instagram with speed and ease.
+                <span className="font-semibold">VidDown</span> lets you download videos & images
+                <br />from Instagram & Twitter with speed and ease.
                 <br />No hassle—just seamless, uninterrupted
                 <br />entertainment at your fingertips!
               </p>
             </CardContent>
           </Card>
 
-          {/* Input Section */}
-          <div className="mb-6">
-            <Input
-              type="url"
-              placeholder="🔗 Paste Instagram Reel or Post link here..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
-              className="h-14 text-base rounded-full px-6 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 shadow-sm"
-              disabled={loading}
-            />
-          </div>
-
-          {/* Download Button */}
-          <Button
-            onClick={handleFetchMedia}
-            disabled={loading}
-            className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Processing...
-              </>
-            ) : (
-              'Download'
-            )}
-          </Button>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
-              <p className="text-sm text-red-700 dark:text-red-400 text-center">{error}</p>
-            </div>
-          )}
-
-          {/* Media Preview */}
-          {media && (
-            <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <Card className="overflow-hidden border-0 shadow-xl">
-                <CardContent className="p-0">
-                  {media.type === 'video' ? (
-                    <video
-                      controls
-                      className="w-full aspect-9/16 object-cover"
-                      src={media.mediaUrl}
-                    >
-                      Your browser does not support the video tag.
-                    </video>
-                  ) : (
-                    <img
-                      src={media.mediaUrl}
-                      alt={media.title || 'Instagram media'}
-                      className="w-full aspect-9/16 object-cover"
-                    />
-                  )}
+          {/* Platform Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Instagram Card */}
+            <Link href="/instagram">
+              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-purple-600 via-pink-600 to-orange-600 shadow-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772c-.5.508-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0zM12 9a3 3 0 110 6 3 3 0 010-6z"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Instagram</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Download Instagram reels, posts, and videos
+                    </p>
+                    <div className="mt-4 px-4 py-2 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-semibold group-hover:from-purple-700 group-hover:to-pink-700 transition-colors">
+                      Start Downloading
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
+            </Link>
 
-              <Button
-                onClick={handleDownload}
-                className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
-              >
-                <Download className="mr-2 h-5 w-5" />
-                Download {media.type === 'video' ? 'Video' : 'Image'}
-              </Button>
-            </div>
-          )}
-
-          {/* Supported Platforms */}
-          <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
-              Supported Platform
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-linear-to-br from-purple-600 via-pink-600 to-orange-600 shadow-lg flex items-center justify-center" title="Instagram">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772c-.5.508-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0zM12 9a3 3 0 110 6 3 3 0 010-6z"/>
-                </svg>
-              </div>
-            </div>
+            {/* Twitter Card */}
+            <Link href="/twitter">
+              <Card className="group overflow-hidden border-0 shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-1">
+                <CardContent className="p-6">
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-linear-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                      <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                      </svg>
+                    </div>
+                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Twitter / X</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Download Twitter videos, GIFs, and images
+                    </p>
+                    <div className="mt-4 px-4 py-2 bg-linear-to-r from-blue-400 to-blue-600 text-white rounded-full text-sm font-semibold group-hover:from-blue-500 group-hover:to-blue-700 transition-colors">
+                      Start Downloading
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
-          {/* Badge */}
-          <div className="mt-6 text-center">
+          {/* Features */}
+          <div className="mt-8 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Free</span>
-              <span className="px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">Social Media</span>
+              <span className="px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">No Limits</span>
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Fast</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-2">
-              Video Downloader
-            </h3>
           </div>
         </div>
       </main>
