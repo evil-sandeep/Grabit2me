@@ -185,7 +185,7 @@ export default function InstagramDownloader() {
                   {media.type === 'video' ? (
                     <video
                       controls
-                      className="w-full aspect-9/16 object-cover"
+                      className="w-full aspect-auto object-contain bg-black"
                       src={media.mediaUrl}
                     >
                       Your browser does not support the video tag.
@@ -194,7 +194,7 @@ export default function InstagramDownloader() {
                     <img
                       src={media.mediaUrl}
                       alt={media.title || 'Instagram media'}
-                      className="w-full aspect-9/16 object-cover"
+                      className="w-full aspect-auto object-contain"
                     />
                   )}
                 </CardContent>

@@ -1,5 +1,5 @@
 # 🚀 QUICK START GUIDE
-
+https://x.com/trollmamata28/status/1997274445241827669?s=20
 ## Installation & Setup
 
 ```bash

@@ -184,7 +184,7 @@ export default function TwitterDownloader() {
                   {media.type === 'video' ? (
                     <video
                       controls
-                      className="w-full aspect-video object-cover"
+                      className="w-full aspect-auto object-contain bg-black"
                       src={media.mediaUrl}
                     >
                       Your browser does not support the video tag.
@@ -193,7 +193,7 @@ export default function TwitterDownloader() {
                     <img
                       src={media.mediaUrl}
                       alt={media.title || 'Twitter media'}
-                      className="w-full aspect-auto object-cover"
+                      className="w-full aspect-auto object-contain"
                     />
                   )}
                 </CardContent>
