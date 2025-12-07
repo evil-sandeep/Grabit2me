@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Loader2, Moon, Sun, ArrowLeft } from 'lucide-react';
+import { Download, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -21,17 +21,6 @@ export default function TwitterDownloader() {
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
-  const [darkMode, setDarkMode] = useState(false);
-
-  useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark');
-    setDarkMode(isDark);
-  }, []);
-
-  const toggleDarkMode = () => {
-    document.documentElement.classList.toggle('dark');
-    setDarkMode(!darkMode);
-  };
 
   const handleFetchMedia = async () => {
     if (!url.trim()) {
@@ -87,33 +76,20 @@ export default function TwitterDownloader() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300">
+    <div className="min-h-screen bg-gray-50 transition-colors duration-300">
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-              <ArrowLeft className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            </Link>
-            <Image 
-              src="/newLogo.svg" 
-              alt="VidDown" 
-              width={120} 
-              height={32}
-              className="h-8 w-auto"
-            />
-          </div>
-          <button
-            onClick={toggleDarkMode}
-            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-            aria-label="Toggle dark mode"
-          >
-            {darkMode ? (
-              <Sun className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-            ) : (
-              <Moon className="w-5 h-5 text-gray-600" />
-            )}
-          </button>
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </Link>
+          <Image 
+            src="/newLogo.svg" 
+            alt="VidDown" 
+            width={120} 
+            height={32}
+            className="h-8 w-auto"
+          />
         </div>
       </header>
 
@@ -148,7 +124,7 @@ export default function TwitterDownloader() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
-              className="h-14 text-base rounded-full px-6 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700 shadow-sm"
+              className="h-14 text-base rounded-full px-6 bg-white border-gray-300 shadow-sm"
               disabled={loading}
             />
           </div>
@@ -171,8 +147,8 @@ export default function TwitterDownloader() {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl">
-              <p className="text-sm text-red-700 dark:text-red-400 text-center">{error}</p>
+            <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
+              <p className="text-sm text-red-700 text-center">{error}</p>
             </div>
           )}
 
@@ -201,7 +177,7 @@ export default function TwitterDownloader() {
 
               {media.title && (
                 <div className="px-2">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">{media.title}</p>
+                  <p className="text-sm text-gray-700 font-medium">{media.title}</p>
                   {media.description && (
                     <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">@{media.description}</p>
                   )}
@@ -220,7 +196,7 @@ export default function TwitterDownloader() {
 
           {/* Supported Platforms */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
+            <p className="text-sm text-gray-600 mb-3 font-medium">
               Supported Platform
             </p>
             <div className="flex items-center justify-center gap-4">
@@ -234,19 +210,19 @@ export default function TwitterDownloader() {
 
           {/* Badge */}
           <div className="mt-6 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Free</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-gray-200">
+              <span className="text-sm font-medium text-gray-700">Free</span>
               <span className="px-2 py-0.5 text-xs font-bold text-white bg-blue-500 rounded-full">Social Media</span>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mt-2">
+            <h3 className="text-xl font-bold text-gray-900 mt-2">
               Video Downloader
             </h3>
           </div>
 
           {/* Instructions */}
-          <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl">
-            <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-2">How to use:</h4>
-            <ol className="text-xs text-blue-800 dark:text-blue-400 space-y-1 list-decimal list-inside">
+          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">How to use:</h4>
+            <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
               <li>Copy the link to a Twitter/X post with video or image</li>
               <li>Paste the link in the input field above</li>
               <li>Click the Download button</li>
