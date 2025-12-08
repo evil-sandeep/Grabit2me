@@ -15,16 +15,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if it's an Instagram URL
-    const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[A-Za-z0-9_-]+\/?/;
+    const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv|stories)\/[A-Za-z0-9_-]+\/?/;
     if (!instagramRegex.test(url)) {
       return NextResponse.json(
-        { error: 'Please provide a valid Instagram post URL' },
+        { error: 'Please provide a valid Instagram post, reel, or story URL' },
         { status: 400 }
       );
     }
 
-    // Determine if URL is a reel
+    // Determine if URL is a reel or story
     const isReel = url.includes('/reel/');
+    const isStory = url.includes('/stories/');
 
     // Fetch the Instagram page HTML
     let response;
@@ -47,8 +48,8 @@ export async function POST(request: NextRequest) {
       });
     } catch (err) {
       // If direct fetch fails, try the embed endpoint
-      const shortcode = url.match(/\/(p|reel|tv)\/([A-Za-z0-9_-]+)/)?.[2];
-      if (shortcode) {
+      const shortcode = url.match(/\/(p|reel|tv|stories)\/([A-Za-z0-9_-]+)/)?.[2];
+      if (shortcode && !isStory) {
         response = await axios.get(`https://www.instagram.com/p/${shortcode}/embed/captioned/`, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
@@ -110,6 +111,31 @@ export async function POST(request: NextRequest) {
         mediaUrl = mp4Match[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
         type = 'video';
         break;
+      }
+
+      // Pattern 5: For stories - look for specific story video patterns
+      if (isStory) {
+        const storyVideoMatch = scriptContent.match(/"video_resources":\[([^\]]+)\]/);
+        if (storyVideoMatch) {
+          const resources = storyVideoMatch[1];
+          const srcMatch = resources.match(/"src":"([^"]+)"/);
+          if (srcMatch && srcMatch[1]) {
+            mediaUrl = srcMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+            type = 'video';
+            break;
+          }
+        }
+
+        // Story image pattern
+        const storyImageMatch = scriptContent.match(/"display_resources":\[([^\]]+)\]/);
+        if (storyImageMatch && !mediaUrl) {
+          const resources = storyImageMatch[1];
+          const srcMatch = resources.match(/"src":"([^"]+)"/);
+          if (srcMatch && srcMatch[1]) {
+            mediaUrl = srcMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+            type = 'image';
+          }
+        }
       }
     }
 
@@ -179,8 +205,18 @@ export async function POST(request: NextRequest) {
         ogVideo: !!ogVideo,
         ogImage: !!ogImage,
         jsonLdData: !!jsonLdData,
-        scriptTagsCount: scriptTags.length
+        scriptTagsCount: scriptTags.length,
+        isStory
       });
+      
+      if (isStory) {
+        return NextResponse.json(
+          { 
+            error: 'Could not extract story. Instagram stories require authentication or may have expired. Please note that stories are only available for 24 hours.' 
+          },
+          { status: 404 }
+        );
+      }
       
       return NextResponse.json(
         { 

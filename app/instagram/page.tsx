@@ -109,8 +109,8 @@ export default function InstagramDownloader() {
               <h1 className="text-3xl font-bold mb-2">Instagram</h1>
               <h2 className="text-4xl font-extrabold mb-4">Downloader</h2>
               <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">VidDown</span> lets you download videos
-                <br />from Instagram with speed and ease.
+                <span className="font-semibold">VidDown</span> lets you download videos & images
+                <br />from Instagram Reels, Posts & Stories.
                 <br />No hassle—just seamless, uninterrupted
                 <br />entertainment at your fingertips!
               </p>
@@ -121,7 +121,7 @@ export default function InstagramDownloader() {
           <div className="mb-6">
             <Input
               type="url"
-              placeholder="🔗 Paste Instagram Reel or Post link here..."
+              placeholder="🔗 Paste Instagram Reel, Post, or Story link here..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
