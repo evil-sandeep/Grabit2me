@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface MediaResponse {
   type: 'video' | 'image';
@@ -14,42 +15,15 @@ interface MediaResponse {
   description?: string;
 }
 
-type Platform = 'instagram' | 'twitter' | 'facebook' | 'pinterest' | 'threads' | 'unsupported';
-
-export default function Home() {
+export default function ThreadsDownloader() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
 
-  const detectPlatform = (url: string): Platform => {
-    const urlLower = url.toLowerCase().trim();
-    
-    if (urlLower.includes('instagram.com') || urlLower.includes('instagr.am')) {
-      return 'instagram';
-    } else if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
-      return 'twitter';
-    } else if (urlLower.includes('facebook.com') || urlLower.includes('fb.watch') || urlLower.includes('fb.com')) {
-      return 'facebook';
-    } else if (urlLower.includes('pinterest.com') || urlLower.includes('pin.it')) {
-      return 'pinterest';
-    } else if (urlLower.includes('threads.net')) {
-      return 'threads';
-    }
-    
-    return 'unsupported';
-  };
-
   const handleFetchMedia = async () => {
     if (!url.trim()) {
-      setError('Please enter a URL');
-      return;
-    }
-
-    const platform = detectPlatform(url);
-    
-    if (platform === 'unsupported') {
-      setError('Platform not supported right now. Currently supported: Instagram, Twitter/X, Facebook, Pinterest, Threads');
+      setError('Please enter a Threads URL');
       return;
     }
 
@@ -58,17 +32,7 @@ export default function Home() {
     setMedia(null);
 
     try {
-      const apiEndpoint = platform === 'instagram' 
-        ? '/api/instagram' 
-        : platform === 'twitter' 
-        ? '/api/twitter' 
-        : platform === 'facebook'
-        ? '/api/facebook'
-        : platform === 'pinterest'
-        ? '/api/pinterest'
-        : '/api/threads';
-      
-      const response = await fetch(apiEndpoint, {
+      const response = await fetch('/api/threads', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -98,7 +62,7 @@ export default function Home() {
       
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `viddown-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
+      link.download = `threads-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -112,7 +76,10 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 transition-colors duration-300">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center">
+        <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
+            <ArrowLeft className="w-5 h-5 text-gray-600" />
+          </Link>
           <Image 
             src="/newLogo.svg" 
             alt="VidDown" 
@@ -127,22 +94,21 @@ export default function Home() {
       <main className="pt-20 pb-8 px-4">
         <div className="max-w-md mx-auto">
           {/* Hero Card */}
-          <Card className="overflow-hidden border-0 shadow-2xl mb-6 bg-linear-to-br from-purple-600 via-pink-600 to-red-600">
+          <Card className="overflow-hidden border-0 shadow-2xl mb-6 bg-linear-to-br from-gray-800 via-gray-900 to-black">
             <CardContent className="p-8 text-center text-white">
               <div className="mb-4">
                 <div className="inline-block">
-                  <svg className="w-16 h-16 mx-auto mb-3" viewBox="0 0 100 100" fill="none">
-                    <path d="M50 10L65 35H35L50 10Z M50 90L65 65H35L50 90Z M10 50L35 35V65L10 50Z M90 50L65 35V65L90 50Z" fill="white" opacity="0.9"/>
+                  <svg className="w-16 h-16 mx-auto mb-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142l-.126.742a12.993 12.993 0 0 0-2.83-.13c-1.218.07-2.175.437-2.849 1.092-.66.642-.972 1.445-.928 2.387.042.868.44 1.561 1.155 2.007.629.393 1.478.546 2.39.432 1.076-.053 1.934-.486 2.547-1.286.407-.53.684-1.228.804-2.042l.024-.193.135-.019c1.85-.27 3.153-.643 3.88-1.108 1.06-.676 1.663-1.59 1.788-2.715.03-.267.042-.54.042-.82 0-1.544-.363-2.89-1.08-4.004-.734-1.14-1.814-2.02-3.21-2.614-1.37-.583-2.98-.877-4.787-.876h-.017c-1.808 0-3.419.293-4.788.876-1.396.594-2.476 1.474-3.21 2.614-.717 1.114-1.08 2.46-1.08 4.004 0 .28.012.553.042.82.125 1.125.728 2.04 1.788 2.715.727.465 2.03.837 3.88 1.108l.135.019.024.193c.12.814.397 1.512.804 2.042.613.8 1.471 1.233 2.547 1.286.912.114 1.761-.039 2.39-.432.715-.446 1.113-1.139 1.155-2.007.044-.942-.268-1.745-.928-2.387-.674-.655-1.631-1.022-2.849-1.092a12.993 12.993 0 0 0-2.83.13l-.126-.742a13.853 13.853 0 0 1 3.02-.142c1.464.084 2.703.531 3.583 1.291.922.797 1.395 1.892 1.33 3.082-.067 1.224-.689 2.275-1.752 2.964-.898.583-2.057.866-3.259.801-1.59-.086-2.844-.688-3.73-1.79-.662-.826-1.092-1.92-1.284-3.272-.761.45-1.324 1.04-1.634 1.75-.528 1.205-.557 3.185 1.09 4.798 1.442 1.414 3.177 2.025 5.8 2.045z"/>
                   </svg>
                 </div>
               </div>
-              <h1 className="text-3xl font-bold mb-2">Your Ultimate</h1>
-              <h2 className="text-4xl font-extrabold mb-4">Social Media Downloader</h2>
+              <h1 className="text-3xl font-bold mb-2">Threads</h1>
+              <h2 className="text-4xl font-extrabold mb-4">Downloader</h2>
               <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">VidDown</span> lets you download videos & images
-                <br />from Instagram, Twitter, Facebook, Pinterest & Threads.
-                <br />No hassle—just seamless, uninterrupted
-                <br />entertainment at your fingertips!
+                <span className="font-semibold">VidDown</span> lets you download videos
+                <br />and images from Threads with ease.
+                <br />Fast, simple, and completely free!
               </p>
             </CardContent>
           </Card>
@@ -151,7 +117,7 @@ export default function Home() {
           <div className="mb-6">
             <Input
               type="url"
-              placeholder="🔗 Paste link from Instagram, Twitter, Facebook, Pinterest or Threads..."
+              placeholder="🔗 Paste Threads post link here..."
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
@@ -164,7 +130,7 @@ export default function Home() {
           <Button
             onClick={handleFetchMedia}
             disabled={loading}
-            className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-gray-800 to-black hover:from-gray-900 hover:to-gray-950 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {loading ? (
               <>
@@ -199,7 +165,7 @@ export default function Home() {
                   ) : (
                     <img
                       src={media.mediaUrl}
-                      alt={media.title || 'Media'}
+                      alt={media.title || 'Threads media'}
                       className="w-full aspect-auto object-contain"
                     />
                   )}
@@ -209,9 +175,6 @@ export default function Home() {
               {media.title && (
                 <div className="px-2">
                   <p className="text-sm text-gray-700 font-medium">{media.title}</p>
-                  {media.description && (
-                    <p className="text-xs text-gray-500 mt-1">@{media.description}</p>
-                  )}
                 </div>
               )}
 
@@ -228,29 +191,9 @@ export default function Home() {
           {/* Supported Platforms */}
           <div className="mt-8 text-center">
             <p className="text-sm text-gray-600 mb-3 font-medium">
-              Supported Platforms
+              Supported Platform
             </p>
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <div className="w-12 h-12 rounded-lg bg-linear-to-br from-purple-600 via-pink-600 to-orange-600 shadow-lg flex items-center justify-center" title="Instagram">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153.509.5.902 1.105 1.153 1.772.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 01-1.153 1.772c-.5.508-1.105.902-1.772 1.153-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 01-1.772-1.153 4.904 4.904 0 01-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 011.153-1.772A4.897 4.897 0 015.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 100 10 5 5 0 000-10zm6.5-.25a1.25 1.25 0 10-2.5 0 1.25 1.25 0 002.5 0zM12 9a3 3 0 110 6 3 3 0 010-6z"/>
-                </svg>
-              </div>
-              <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-400 to-blue-600 shadow-lg flex items-center justify-center" title="Twitter / X">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                </svg>
-              </div>
-              <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-600 to-blue-700 shadow-lg flex items-center justify-center" title="Facebook">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                </svg>
-              </div>
-              <div className="w-12 h-12 rounded-lg bg-linear-to-br from-red-600 to-red-700 shadow-lg flex items-center justify-center" title="Pinterest">
-                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0a12 12 0 0 0-4.37 23.17c-.1-.92-.19-2.33 0-3.33l1.45-6.15s-.37-.74-.37-1.84c0-1.72 1-3 2.24-3 1.05 0 1.56.79 1.56 1.73 0 1.06-.67 2.64-1.02 4.1-.29 1.21.61 2.2 1.8 2.2 2.16 0 3.82-2.28 3.82-5.57 0-2.91-2.09-4.95-5.07-4.95-3.46 0-5.49 2.59-5.49 5.27 0 1.04.4 2.16.9 2.77.1.12.11.23.08.35l-.33 1.36c-.05.22-.18.27-.42.16-1.52-.71-2.47-2.93-2.47-4.72 0-3.83 2.78-7.35 8.02-7.35 4.21 0 7.48 3 7.48 7.01 0 4.18-2.64 7.55-6.3 7.55-1.23 0-2.39-.64-2.79-1.4l-.76 2.9c-.27 1.06-1.02 2.39-1.52 3.2A12 12 0 1 0 12 0z"/>
-                </svg>
-              </div>
+            <div className="flex items-center justify-center gap-4">
               <div className="w-12 h-12 rounded-lg bg-linear-to-br from-gray-800 to-black shadow-lg flex items-center justify-center" title="Threads">
                 <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M12.186 24h-.007c-3.581-.024-6.334-1.205-8.184-3.509C2.35 18.44 1.5 15.586 1.472 12.01v-.017c.03-3.579.879-6.43 2.525-8.482C5.845 1.205 8.6.024 12.18 0h.014c2.746.02 5.043.725 6.826 2.098 1.677 1.29 2.858 3.13 3.509 5.467l-2.04.569c-1.104-3.96-3.898-5.984-8.304-6.015-2.91.022-5.11.936-6.54 2.717C4.307 6.504 3.616 8.914 3.589 12c.027 3.086.718 5.496 2.057 7.164 1.43 1.783 3.631 2.698 6.54 2.717 2.623-.02 4.358-.631 5.8-2.045 1.647-1.613 1.618-3.593 1.09-4.798-.31-.71-.873-1.3-1.634-1.75-.192 1.352-.622 2.446-1.284 3.272-.886 1.102-2.14 1.704-3.73 1.79-1.202.065-2.361-.218-3.259-.801-1.063-.689-1.685-1.74-1.752-2.964-.065-1.19.408-2.285 1.33-3.082.88-.76 2.119-1.207 3.583-1.291a13.853 13.853 0 0 1 3.02.142l-.126.742a12.993 12.993 0 0 0-2.83-.13c-1.218.07-2.175.437-2.849 1.092-.66.642-.972 1.445-.928 2.387.042.868.44 1.561 1.155 2.007.629.393 1.478.546 2.39.432 1.076-.053 1.934-.486 2.547-1.286.407-.53.684-1.228.804-2.042l.024-.193.135-.019c1.85-.27 3.153-.643 3.88-1.108 1.06-.676 1.663-1.59 1.788-2.715.03-.267.042-.54.042-.82 0-1.544-.363-2.89-1.08-4.004-.734-1.14-1.814-2.02-3.21-2.614-1.37-.583-2.98-.877-4.787-.876h-.017c-1.808 0-3.419.293-4.788.876-1.396.594-2.476 1.474-3.21 2.614-.717 1.114-1.08 2.46-1.08 4.004 0 .28.012.553.042.82.125 1.125.728 2.04 1.788 2.715.727.465 2.03.837 3.88 1.108l.135.019.024.193c.12.814.397 1.512.804 2.042.613.8 1.471 1.233 2.547 1.286.912.114 1.761-.039 2.39-.432.715-.446 1.113-1.139 1.155-2.007.044-.942-.268-1.745-.928-2.387-.674-.655-1.631-1.022-2.849-1.092a12.993 12.993 0 0 0-2.83.13l-.126-.742a13.853 13.853 0 0 1 3.02-.142c1.464.084 2.703.531 3.583 1.291.922.797 1.395 1.892 1.33 3.082-.067 1.224-.689 2.275-1.752 2.964-.898.583-2.057.866-3.259.801-1.59-.086-2.844-.688-3.73-1.79-.662-.826-1.092-1.92-1.284-3.272-.761.45-1.324 1.04-1.634 1.75-.528 1.205-.557 3.185 1.09 4.798 1.442 1.414 3.177 2.025 5.8 2.045z"/>
@@ -263,9 +206,25 @@ export default function Home() {
           <div className="mt-6 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-gray-200">
               <span className="text-sm font-medium text-gray-700">Free</span>
-              <span className="px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">No Limits</span>
-              <span className="text-sm font-medium text-gray-700">Fast</span>
+              <span className="px-2 py-0.5 text-xs font-bold text-white bg-gray-800 rounded-full">Social Media</span>
             </div>
+            <h3 className="text-xl font-bold text-gray-900 mt-2">
+              Video Downloader
+            </h3>
+          </div>
+
+          {/* Instructions */}
+          <div className="mt-8 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">How to use:</h4>
+            <ol className="text-xs text-gray-800 space-y-1 list-decimal list-inside">
+              <li>Copy the link to a Threads post with video or image</li>
+              <li>Paste the link in the input field above</li>
+              <li>Click the Download button</li>
+              <li>Preview and download your media!</li>
+            </ol>
+            <p className="text-xs text-gray-700 mt-3 italic">
+              Note: Only public Threads posts can be downloaded.
+            </p>
           </div>
         </div>
       </main>

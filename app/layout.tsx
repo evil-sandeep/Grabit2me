@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VidDown - Instagram Reels & Video Downloader | Download Reels, Videos & Photos",
-  description: "Download Instagram Reels, Videos, and Photos instantly. One-click download for public Instagram posts, reels, and IGTV content. Fast, free, and easy to use.",
+  title: "VidDown - Social Media Video Downloader | Instagram, Twitter, Facebook, Pinterest & Threads",
+  description: "Download videos and images from Instagram, Twitter, Facebook, Pinterest, and Threads instantly. One-click download for public posts, reels, and videos. Fast, free, and easy to use.",
 };
 
 export default function RootLayout({
