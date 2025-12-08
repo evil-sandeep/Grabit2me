@@ -38,9 +38,12 @@ export async function POST(request: NextRequest) {
           'Sec-Fetch-Dest': 'document',
           'Sec-Fetch-Mode': 'navigate',
           'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
           'Cache-Control': 'max-age=0',
+          'Referer': 'https://www.linkedin.com/',
         },
-        timeout: 15000,
+        timeout: 20000,
+        maxRedirects: 5,
       });
     } catch (err: any) {
       console.error('LinkedIn fetch error:', err.message);
@@ -66,25 +69,129 @@ export async function POST(request: NextRequest) {
 
     description = $('meta[property="og:description"]').attr('content') || 'LinkedIn';
 
-    // Method 1: Extract from meta tags (primary for LinkedIn)
-    const videoMetaUrl = $('meta[property="og:video"]').attr('content') ||
-                        $('meta[property="og:video:url"]').attr('content') ||
-                        $('meta[property="og:video:secure_url"]').attr('content');
+    // Method 1: Extract from inline JavaScript FIRST (most reliable for videos)
+    const allScripts = $('script').toArray();
+    console.log(`Found ${allScripts.length} script tags to analyze`);
     
-    if (videoMetaUrl) {
-      mediaUrl = videoMetaUrl;
-      type = 'video';
-    } else {
-      // Try image meta tags
-      const imageMetaUrl = $('meta[property="og:image"]').attr('content') ||
-                          $('meta[property="og:image:url"]').attr('content');
-      if (imageMetaUrl) {
-        mediaUrl = imageMetaUrl;
-        type = 'image';
+    for (const script of allScripts) {
+      const scriptContent = $(script).html() || '';
+      
+      // Look for progressiveStreams (high priority for video)
+      const progressiveStreamsMatch = scriptContent.match(/"progressiveStreams":\[([^\]]+)\]/);
+      if (progressiveStreamsMatch) {
+        const streams = progressiveStreamsMatch[1];
+        const streamUrlMatch = streams.match(/"streamingLocations":\[{"url":"([^"]+)"/);
+        if (streamUrlMatch && streamUrlMatch[1]) {
+          mediaUrl = streamUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+          type = 'video';
+          console.log('Found video via progressiveStreams');
+          break;
+        }
+      }
+
+      // Look for video data in LinkedIn's data structures
+      const progressiveUrlMatch = scriptContent.match(/"progressiveUrl":"([^"]+)"/);
+      if (progressiveUrlMatch && progressiveUrlMatch[1]) {
+        mediaUrl = progressiveUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+        type = 'video';
+        console.log('Found video via progressiveUrl');
+        break;
+      }
+
+      // Look for downloadUrl
+      const downloadUrlMatch = scriptContent.match(/"downloadUrl":"([^"]+)"/);
+      if (downloadUrlMatch && downloadUrlMatch[1]) {
+        mediaUrl = downloadUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+        type = 'video';
+        console.log('Found video via downloadUrl');
+        break;
+      }
+
+      // Look for adaptiveStreams with highest quality
+      const adaptiveStreamsMatch = scriptContent.match(/"adaptiveStreams":\[([^\]]+)\]/);
+      if (adaptiveStreamsMatch) {
+        const streams = adaptiveStreamsMatch[1];
+        const urlMatch = streams.match(/"url":"([^"]+)"/);
+        if (urlMatch && urlMatch[1]) {
+          mediaUrl = urlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+          type = 'video';
+          console.log('Found video via adaptiveStreams');
+          break;
+        }
+      }
+
+      // Look for transcoded videos array
+      const transcodedMatch = scriptContent.match(/"transcodedVideos":\[([^\]]+)\]/);
+      if (transcodedMatch) {
+        const videos = transcodedMatch[1];
+        const urlMatch = videos.match(/"url":"([^"]+)"/);
+        if (urlMatch && urlMatch[1]) {
+          mediaUrl = urlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+          type = 'video';
+          console.log('Found video via transcodedVideos');
+          break;
+        }
+      }
+
+      // Look for media patterns with .mp4
+      const mp4Match = scriptContent.match(/"(https?:[^"]*\.mp4[^"]*)"/);
+      if (mp4Match && mp4Match[1]) {
+        mediaUrl = mp4Match[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+        type = 'video';
+        console.log('Found video via mp4 pattern');
+        break;
+      }
+
+      // Look for video URL in various formats
+      const videoUrlPatterns = [
+        /"videoUrl":"([^"]+)"/,
+        /"video_url":"([^"]+)"/,
+        /"src":"(https?:[^"]*dms-exp[^"]*video[^"]*)"/,
+        /"url":"(https?:[^"]*\.cloudfront\.net[^"]*\.mp4[^"]*)"/,
+        /"playableUrl":"([^"]+)"/,
+        /"hlsVideoUrl":"([^"]+)"/
+      ];
+
+      for (const pattern of videoUrlPatterns) {
+        const match = scriptContent.match(pattern);
+        if (match && match[1]) {
+          mediaUrl = match[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
+          type = 'video';
+          console.log('Found video via URL pattern:', pattern.source);
+          break;
+        }
+      }
+
+      if (mediaUrl && type === 'video') break;
+    }
+
+    console.log('After script scan - mediaUrl:', mediaUrl ? 'found' : 'not found', 'type:', type);
+
+    // Method 2: Extract from meta tags (fallback)
+    if (!mediaUrl) {
+      const videoMetaUrl = $('meta[property="og:video"]').attr('content') ||
+                          $('meta[property="og:video:url"]').attr('content') ||
+                          $('meta[property="og:video:secure_url"]').attr('content') ||
+                          $('meta[name="twitter:player:stream"]').attr('content');
+      
+      if (videoMetaUrl) {
+        mediaUrl = videoMetaUrl;
+        type = 'video';
       }
     }
 
-    // Method 2: Extract from JSON-LD script tags
+    // Method 3: Try to find video elements directly in HTML
+    if (!mediaUrl) {
+      const videoElement = $('video').first();
+      if (videoElement.length > 0) {
+        mediaUrl = videoElement.attr('src') || videoElement.find('source').first().attr('src') || null;
+        if (mediaUrl) {
+          type = 'video';
+        }
+      }
+    }
+
+    // Method 4: Extract from JSON-LD script tags
     if (!mediaUrl) {
       const scriptTags = $('script[type="application/ld+json"]').toArray();
       for (const script of scriptTags) {
@@ -95,54 +202,28 @@ export async function POST(request: NextRequest) {
             type = 'video';
             break;
           }
-          if (jsonData.image && typeof jsonData.image === 'string') {
-            mediaUrl = jsonData.image;
-            type = 'image';
-            break;
-          }
         } catch (e) {
           // Continue to next method
         }
       }
     }
 
-    // Method 3: Extract from inline JavaScript
+    // Method 5: Only look for images if no video found (LAST RESORT)
     if (!mediaUrl) {
-      const allScripts = $('script').toArray();
+      // Try image meta tags
+      const imageMetaUrl = $('meta[property="og:image"]').attr('content') ||
+                          $('meta[property="og:image:url"]').attr('content');
+      if (imageMetaUrl) {
+        mediaUrl = imageMetaUrl;
+        type = 'image';
+      }
+    }
+
+    // Method 6: Look for image URLs in scripts (only if no video)
+    if (!mediaUrl) {
       for (const script of allScripts) {
         const scriptContent = $(script).html() || '';
         
-        // Look for video data in LinkedIn's data structures
-        const videoUrlMatch = scriptContent.match(/"progressiveUrl":"([^"]+)"/);
-        if (videoUrlMatch && videoUrlMatch[1]) {
-          mediaUrl = videoUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
-          type = 'video';
-          break;
-        }
-
-        // Look for media patterns
-        const mediaUrlMatch = scriptContent.match(/"media":"([^"]+)"/);
-        if (mediaUrlMatch && mediaUrlMatch[1]) {
-          const url = mediaUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
-          if (url.includes('.mp4')) {
-            mediaUrl = url;
-            type = 'video';
-            break;
-          } else if (url.match(/\.(jpg|jpeg|png|webp)/i)) {
-            mediaUrl = url;
-            type = 'image';
-            break;
-          }
-        }
-
-        // Look for downloadUrl
-        const downloadUrlMatch = scriptContent.match(/"downloadUrl":"([^"]+)"/);
-        if (downloadUrlMatch && downloadUrlMatch[1]) {
-          mediaUrl = downloadUrlMatch[1].replace(/\\u002F/g, '/').replace(/\\/g, '');
-          type = 'video';
-          break;
-        }
-
         // Look for image URLs
         const imageUrlMatch = scriptContent.match(/"url":"(https:\/\/media\.licdn\.com\/dms\/image[^"]+)"/);
         if (imageUrlMatch && imageUrlMatch[1]) {
@@ -153,25 +234,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Method 4: Try to find video or image elements directly in HTML
+    // Method 7: Find images in HTML (absolute last resort)
     if (!mediaUrl) {
-      // Look for video elements
-      const videoElement = $('video').first();
-      if (videoElement.length > 0) {
-        mediaUrl = videoElement.attr('src') || videoElement.find('source').first().attr('src') || null;
+      const imgElement = $('img[src*="media.licdn.com"]').first();
+      if (imgElement.length > 0) {
+        mediaUrl = imgElement.attr('src') || null;
         if (mediaUrl) {
-          type = 'video';
-        }
-      }
-      
-      // If no video, look for images
-      if (!mediaUrl) {
-        const imgElement = $('img[src*="media.licdn.com"]').first();
-        if (imgElement.length > 0) {
-          mediaUrl = imgElement.attr('src') || null;
-          if (mediaUrl) {
-            type = 'image';
-          }
+          type = 'image';
         }
       }
     }
