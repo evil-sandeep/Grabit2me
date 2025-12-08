@@ -1,0 +1,78 @@
+{
+  "name": "TotalGrab - Social Media Video Downloader",
+  "short_name": "TotalGrab",
+  "description": "Download videos and images from Instagram, Twitter, Facebook, Pinterest, Threads, TikTok, LinkedIn, Snapchat & Reddit instantly",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9333ea",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["utilities", "productivity"],
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Instagram Downloader",
+      "short_name": "Instagram",
+      "description": "Download Instagram videos and images",
+      "url": "/instagram",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Twitter Downloader",
+      "short_name": "Twitter",
+      "description": "Download Twitter videos and images",
+      "url": "/twitter",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "TikTok Downloader",
+      "short_name": "TikTok",
+      "description": "Download TikTok videos",
+      "url": "/tiktok",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false
+}

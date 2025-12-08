@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Download, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import InstallPWA from '@/components/InstallPWA';
 
 interface MediaResponse {
   type: 'video' | 'image';
@@ -114,7 +115,7 @@ export default function Home() {
       
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `viddown-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
+      link.download = `totalgrab-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -126,12 +127,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 transition-colors duration-300">
+      <InstallPWA />
+      
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center">
           <Image 
-            src="/newLogo.svg" 
-            alt="VidDown" 
+            src="/icon.svg" 
+            alt="TotalGrab" 
             width={120} 
             height={32}
             className="h-8 w-auto"
@@ -155,7 +158,7 @@ export default function Home() {
               <h1 className="text-3xl font-bold mb-2">Your Ultimate</h1>
               <h2 className="text-4xl font-extrabold mb-4">Social Media Downloader</h2>
               <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">VidDown</span> lets you download videos & images from
+                <span className="font-semibold">TotalGrab</span> lets you download videos & images from
                 <br />Instagram, Twitter, Facebook, Pinterest, Threads, TikTok, LinkedIn, Snapchat & Reddit.
                 <br />No hassle—just seamless, uninterrupted entertainment at your fingertips!
               </p>

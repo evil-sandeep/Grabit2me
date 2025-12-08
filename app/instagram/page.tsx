@@ -84,8 +84,8 @@ export default function InstagramDownloader() {
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </Link>
           <Image 
-            src="/newLogo.svg" 
-            alt="VidDown" 
+            src="/icon.svg" 
+            alt="TotalGrab" 
             width={120} 
             height={32}
             className="h-8 w-auto"
@@ -109,7 +109,7 @@ export default function InstagramDownloader() {
               <h1 className="text-3xl font-bold mb-2">Instagram</h1>
               <h2 className="text-4xl font-extrabold mb-4">Downloader</h2>
               <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">VidDown</span> lets you download videos & images
+                <span className="font-semibold">TotalGrab</span> lets you download videos & images
                 <br />from Instagram Reels, Posts & Stories.
                 <br />No hassle—just seamless, uninterrupted
                 <br />entertainment at your fingertips!
