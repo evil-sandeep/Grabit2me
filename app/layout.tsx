@@ -18,15 +18,15 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  title: "ClipFetch - Instagram, X & Threads Video Downloader",
+  title: "GrabIt - Instagram, X & Threads Video Downloader",
   description: "Download videos and images from Instagram, X (Twitter), and Threads instantly. One-click download for public posts, reels, and videos. Fast, free, and easy to use.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "ClipFetch",
+    title: "GrabIt",
   },
-  applicationName: "ClipFetch",
+  applicationName: "GrabIt",
   keywords: [
     "video downloader",
     "instagram downloader",
@@ -39,21 +39,21 @@ export const metadata: Metadata = {
     "download videos",
     "download reels",
     "save videos",
-    "clipfetch",
+    "grabit",
   ],
-  authors: [{ name: "ClipFetch" }],
-  creator: "ClipFetch",
-  publisher: "ClipFetch",
+  authors: [{ name: "GrabIt" }],
+  creator: "GrabIt",
+  publisher: "GrabIt",
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://clipfetch.com",
-    title: "ClipFetch - Social Media Video Downloader",
+    url: "https://grabit.com",
+    title: "GrabIt - Social Media Video Downloader",
     description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
-    siteName: "ClipFetch",
+    siteName: "GrabIt",
     images: [
       {
         url: "/manifest-icon-512.maskable.png",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "ClipFetch - Social Media Video Downloader",
+    title: "GrabIt - Social Media Video Downloader",
     description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
     images: ["/manifest-icon-512.maskable.png"],
   },
@@ -90,10 +90,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="application-name" content="ClipFetch" />
+        <meta name="application-name" content="GrabIt" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="ClipFetch" />
+        <meta name="apple-mobile-web-app-title" content="GrabIt" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#000000" />

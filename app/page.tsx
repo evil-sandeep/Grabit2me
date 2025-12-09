@@ -21,6 +21,7 @@ type Platform = 'instagram' | 'twitter' | 'threads' | 'unsupported';
 export default function Home() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
   const previousUrlRef = useRef('');
@@ -114,17 +115,24 @@ export default function Home() {
   const handleDownload = async () => {
     if (!media) return;
 
+    setDownloading(true);
     try {
       const downloadUrl = `/api/download?url=${encodeURIComponent(media.mediaUrl)}&type=${media.type}`;
 
       const link = document.createElement('a');
       link.href = downloadUrl;
-      link.download = `totalgrab-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
+      link.download = `grabit-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      // Keep loader visible for a moment to ensure download starts
+      setTimeout(() => {
+        setDownloading(false);
+      }, 1500);
     } catch (error) {
       console.error('Download failed:', error);
+      setDownloading(false);
       alert('Download failed. Please try again.');
     }
   };
@@ -243,10 +251,20 @@ export default function Home() {
 
               <Button
                 onClick={handleDownload}
+                disabled={downloading}
                 className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer shadow-lg"
               >
-                <Download className="mr-2 h-5 w-5" />
-                Download {media.type === 'video' ? 'Video' : 'Image'}
+                {downloading ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Starting Download...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-5 w-5" />
+                    Download {media.type === 'video' ? 'Video' : 'Image'}
+                  </>
+                )}
               </Button>
             </div>
           )}
