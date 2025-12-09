@@ -58,9 +58,9 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og.png",
-        width: 512,
-        height: 512,
-        alt: "ClipFetch Logo",
+        width: 1200,
+        height: 630,
+        alt: "GrabIt - Download videos from Instagram, X & Threads",
       },
     ],
   },
