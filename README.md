@@ -1,25 +1,27 @@
-# TotalGrab - Social Media Downloader
+# ClipFetch - Social Media Video Downloader
 
-A modern, production-ready Progressive Web App (PWA) for downloading videos and images from multiple social media platforms.
+A modern, production-ready Progressive Web App (PWA) for downloading videos and images from Instagram, X (Twitter), and Threads.
 
 ## ✨ Features
 
-- 📥 Download from 9 platforms: Instagram, Twitter, Facebook, Pinterest, Threads, TikTok, LinkedIn, Snapchat & Reddit
-- 📱 Progressive Web App - Install on any device
-- 🎨 Beautiful UI with shadcn/ui components
-- 🌓 Dark mode support
-- ⚡ Fast and responsive
-- 📴 Offline support with service worker
-- 🔒 Privacy-focused
-- 📱 Mobile-first design
+- 📥 **Multi-Platform Support**: Instagram, X (Twitter), and Threads
+- 📱 **Progressive Web App**: Install on any device (iOS, Android, Desktop)
+- 🎨 **Beautiful UI**: Modern design with shadcn/ui components
+- ⚡ **Auto-Processing**: Paste a link and it automatically starts processing
+- 🔄 **Smart Loading States**: Visual feedback during processing
+- 📴 **Offline Support**: Service worker for offline functionality
+- 🔒 **Privacy-Focused**: No data storage or tracking
+- 📱 **Mobile-First Design**: Responsive and touch-friendly
+- 🌐 **No Login Required**: Start downloading immediately
 
 ## 🚀 Technologies
 
 - **Next.js 16** with Turbopack
 - **TypeScript** - Type safety
-- **shadcn/ui** - UI components
-- **Tailwind CSS v4** - Styling
+- **shadcn/ui** - Beautiful UI components
+- **Tailwind CSS v4** - Modern styling
 - **PWA** - Offline support & installable
+- **Bun** - Fast package manager and runtime
 
 ## 📦 Installation
 

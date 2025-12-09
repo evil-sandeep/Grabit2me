@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Download, Loader2 } from 'lucide-react';
+import { Download, Loader2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import InstallPWA from '@/components/InstallPWA';
+import { Badge } from '@/components/ui/badge';
 
 interface MediaResponse {
   type: 'video' | 'image';
@@ -22,10 +23,11 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
+  const previousUrlRef = useRef('');
 
   const detectPlatform = (url: string): Platform => {
     const urlLower = url.toLowerCase().trim();
-    
+
     if (urlLower.includes('instagram.com') || urlLower.includes('instagr.am')) {
       return 'instagram';
     } else if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
@@ -33,9 +35,25 @@ export default function Home() {
     } else if (urlLower.includes('threads.net')) {
       return 'threads';
     }
-    
+
     return 'unsupported';
   };
+
+  // Auto-fetch when URL is pasted or changed
+  useEffect(() => {
+    const trimmedUrl = url.trim();
+    
+    // Only proceed if URL has changed and is not empty
+    if (trimmedUrl && trimmedUrl !== previousUrlRef.current && !loading && !media) {
+      const platform = detectPlatform(trimmedUrl);
+      
+      // Only auto-fetch if it's a supported platform
+      if (platform !== 'unsupported') {
+        previousUrlRef.current = trimmedUrl;
+        handleFetchMedia();
+      }
+    }
+  }, [url]);
 
   const handleFetchMedia = async () => {
     if (!url.trim()) {
@@ -44,7 +62,7 @@ export default function Home() {
     }
 
     const platform = detectPlatform(url);
-    
+
     if (platform === 'unsupported') {
       setError('Platform not supported. Currently supported: Instagram, Twitter/X, and Threads');
       return;
@@ -55,12 +73,12 @@ export default function Home() {
     setMedia(null);
 
     try {
-      const apiEndpoint = platform === 'instagram' 
-        ? '/api/instagram' 
-        : platform === 'twitter' 
-        ? '/api/twitter' 
-        : '/api/threads';
-      
+      const apiEndpoint = platform === 'instagram'
+        ? '/api/instagram'
+        : platform === 'twitter'
+          ? '/api/twitter'
+          : '/api/threads';
+
       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
@@ -83,12 +101,22 @@ export default function Home() {
     }
   };
 
+  const handleUrlChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newUrl = e.target.value;
+    setUrl(newUrl);
+    setError('');
+    // Reset media when URL changes significantly
+    if (media && newUrl.trim() !== previousUrlRef.current) {
+      setMedia(null);
+    }
+  };
+
   const handleDownload = async () => {
     if (!media) return;
-    
+
     try {
       const downloadUrl = `/api/download?url=${encodeURIComponent(media.mediaUrl)}&type=${media.type}`;
-      
+
       const link = document.createElement('a');
       link.href = downloadUrl;
       link.download = `totalgrab-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
@@ -100,69 +128,47 @@ export default function Home() {
       alert('Download failed. Please try again.');
     }
   };
-
   return (
-    <div className="min-h-screen bg-gray-50 transition-colors duration-300">
+    <div className="min-h-screen pt-16 sm:pt-32">
       <InstallPWA />
-      
-      {/* Header Section */}
-      <header id="header-section" className="header-section fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-        <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-center">
-          <Image 
-            src="/grab.svg" 
-            alt="TotalGrab" 
-            width={120} 
-            height={32}
-            className="h-8 w-auto"
-            priority
-          />
+      <section className="container max-w-4xl mx-auto px-4 pt-20 pb-16 lg:pt-32 lg:pb-24">
+        <div className="max-w-4xl pb-10 mx-auto text-center space-y-8">
+          <div className="space-y-4">
+            <Badge variant="outline" className="mb-4 ">
+              <Sparkles className="h-3 w-3 mr-1" />
+              Free • Fast • No Login Required
+            </Badge>
+
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight ">
+              Download Instagram, X & Threads videos in seconds
+            </h1>
+
+            <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto">
+              Paste a link, choose quality, and download instantly. No login. No watermarks. Just pure simplicity.
+            </p>
+          </div>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="pt-20 pb-8 px-4">
-        <div className="max-w-md mx-auto">
-          {/* Hero Section */}
-          <section id="hero-section" className="hero-section mb-6">
-            <Card className="overflow-hidden border-0 shadow-2xl bg-linear-to-br from-purple-600 via-pink-600 to-red-600">
-            <CardContent className="p-8 text-center text-white">
-              <div className="mb-4">
-                <div className="inline-block">
-                  <svg className="w-16 h-16 mx-auto mb-3" viewBox="0 0 100 100" fill="none">
-                    <path d="M50 10L65 35H35L50 10Z M50 90L65 65H35L50 90Z M10 50L35 35V65L10 50Z M90 50L65 35V65L90 50Z" fill="white" opacity="0.9"/>
-                  </svg>
-                </div>
-              </div>
-              <h1 className="text-3xl font-bold mb-2">Your Ultimate</h1>
-              <h2 className="text-4xl font-extrabold mb-4">Social Media Downloader</h2>
-              <p className="text-white/90 text-sm leading-relaxed">
-                <span className="font-semibold">TotalGrab</span> lets you download videos & images from
-                <br />Instagram, Twitter/X, and Threads.
-                <br />No hassle—just seamless, uninterrupted entertainment at your fingertips!
-              </p>
-            </CardContent>
-            </Card>
-          </section>
-
-          {/* Input Section */}
-          <section id="input-section" className="input-section mb-6">
+        {/* Input Section */}
+          <section id="input-section" className="input-section mb-6 relative">
+            <div className="absolute -inset-1 bg-black rounded-full opacity-10 blur-lg animate-pulse"></div>
             <Input
               type="url"
-              placeholder="🔗 Paste link from Instagram, Twitter/X, or Threads..."
+              placeholder="🔗 Paste your video link here - it will auto-process..."
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={handleUrlChange}
               onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
-              className="h-14 text-base rounded-full px-6 bg-white border-gray-300 shadow-sm"
+              className="relative h-16 text-base rounded-full px-6 bg-white border-2 border-black shadow-lg focus:border-gray-800 focus:ring-4 focus:ring-gray-200 transition-all"
               disabled={loading}
             />
           </section>
 
-          {/* Download Button Section */}
+          {/* Download Button Section - Only show when not loading and no media */}
+          {!loading && !media && url.trim() && (
           <section id="download-button-section" className="download-button-section mb-4">
             <Button
             onClick={handleFetchMedia}
             disabled={loading}
-            className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer  shadow-lg hover:shadow-xl transition-all duration-300"
           >
             {loading ? (
               <>
@@ -174,6 +180,24 @@ export default function Home() {
             )}
           </Button>
           </section>
+          )}
+
+          {/* Loading State */}
+          {loading && (
+            <section className="loading-section mb-4">
+              <Card className="">
+                <CardContent className="p-8">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+                    <div className="text-center">
+                      <p className="text-lg font-semibold text-blue-900">Processing your link...</p>
+                      <p className="text-sm text-blue-600 mt-1">This will only take a moment</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          )}
 
           {/* Error Message Section */}
           <section id="error-section" className="error-section">
@@ -219,7 +243,7 @@ export default function Home() {
 
               <Button
                 onClick={handleDownload}
-                className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg"
+                className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer shadow-lg"
               >
                 <Download className="mr-2 h-5 w-5" />
                 Download {media.type === 'video' ? 'Video' : 'Image'}
@@ -252,16 +276,7 @@ export default function Home() {
             </div>
           </section>
 
-          {/* Badge Section */}
-          <section id="badge-section" className="badge-section mt-6 text-center">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-gray-200">
-              <span className="text-sm font-medium text-gray-700">Free</span>
-              <span className="px-2 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full">No Limits</span>
-              <span className="text-sm font-medium text-gray-700">Fast</span>
-            </div>
-          </section>
-        </div>
-      </main>
+      </section>
     </div>
   );
 }

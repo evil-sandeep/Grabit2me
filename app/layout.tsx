@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import PWARegister from "@/components/PWARegister";
+import { HeroHeader } from "@/components/section/Header";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -16,19 +17,21 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "TotalGrab - Instagram, Twitter & Threads Downloader",
-  description: "Download videos and images from Instagram, Twitter/X, and Threads instantly. One-click download for public posts, reels, and videos. Fast, free, and easy to use.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  title: "ClipFetch - Instagram, X & Threads Video Downloader",
+  description: "Download videos and images from Instagram, X (Twitter), and Threads instantly. One-click download for public posts, reels, and videos. Fast, free, and easy to use.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "TotalGrab",
+    title: "ClipFetch",
   },
-  applicationName: "TotalGrab",
+  applicationName: "ClipFetch",
   keywords: [
     "video downloader",
     "instagram downloader",
     "instagram reels downloader",
+    "x downloader",
     "twitter downloader",
     "twitter video downloader",
     "threads downloader",
@@ -36,44 +39,44 @@ export const metadata: Metadata = {
     "download videos",
     "download reels",
     "save videos",
-    "totalgrab",
+    "clipfetch",
   ],
-  authors: [{ name: "TotalGrab" }],
-  creator: "TotalGrab",
-  publisher: "TotalGrab",
+  authors: [{ name: "ClipFetch" }],
+  creator: "ClipFetch",
+  publisher: "ClipFetch",
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://totalgrab.in",
-    title: "TotalGrab - Social Media Downloader",
-    description: "Download videos and images from Instagram, Twitter/X, and Threads instantly",
-    siteName: "TotalGrab",
+    url: "https://clipfetch.com",
+    title: "ClipFetch - Social Media Video Downloader",
+    description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
+    siteName: "ClipFetch",
     images: [
       {
-        url: "/icon-512.png",
+        url: "/manifest-icon-512.maskable.png",
         width: 512,
         height: 512,
-        alt: "TotalGrab Logo",
+        alt: "ClipFetch Logo",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TotalGrab - Social Media Downloader",
-    description: "Download videos and images from Instagram, Twitter/X, and Threads instantly",
-    images: ["/icon-512.png"],
+    title: "ClipFetch - Social Media Video Downloader",
+    description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
+    images: ["/manifest-icon-512.maskable.png"],
   },
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+      { url: "/manifest-icon-192.maskable.png", sizes: "192x192", type: "image/png" },
+      { url: "/manifest-icon-512.maskable.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/apple-icon-180.png", sizes: "180x180", type: "image/png" },
     ],
     shortcut: ["/icon.svg"],
   },
@@ -87,21 +90,21 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="application-name" content="TotalGrab" />
+        <meta name="application-name" content="ClipFetch" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="TotalGrab" />
+        <meta name="apple-mobile-web-app-title" content="ClipFetch" />
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#ec4899" />
+        <meta name="theme-color" content="#000000" />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-        <link rel="shortcut icon" href="/favicon.png" />
+        <link rel="apple-touch-icon" href="/apple-icon-180.png" />
       </head>
       <body
         className={`${inter.variable} font-mono antialiased`}
       >
+        <HeroHeader />
         <PWARegister />
         {children}
       </body>
