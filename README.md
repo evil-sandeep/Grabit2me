@@ -1,4 +1,4 @@
-# ClipFetch - Social Media Video Downloader
+# GrabIt - Social Media Video Downloader
 
 A modern, production-ready Progressive Web App (PWA) for downloading videos and images from Instagram, X (Twitter), and Threads.
 
@@ -66,5 +66,5 @@ MIT License - Educational purposes only. Please respect content creators' rights
 
 ---
 
-Built with ❤️ by [TotalGrab](https://totalgrab.in)
+Built with ❤️ by GrabIt
 # insta-downloader
