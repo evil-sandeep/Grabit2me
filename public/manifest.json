@@ -1,14 +1,14 @@
 {
-  "name": "TotalGrab - Social Media Video Downloader",
+  "name": "TotalGrab - Social Media Downloader",
   "short_name": "TotalGrab",
-  "description": "Download videos and images from Instagram, Twitter, Facebook, Pinterest, Threads, TikTok, LinkedIn, Snapchat & Reddit instantly",
+  "description": "Download videos and images from Instagram, Twitter/X, and Threads instantly. Fast, free, and easy to use.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#9333ea",
+  "theme_color": "#ec4899",
   "orientation": "portrait-primary",
   "scope": "/",
-  "categories": ["utilities", "productivity"],
+  "categories": ["utilities", "productivity", "social"],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -26,21 +26,19 @@
       "src": "/apple-touch-icon.png",
       "sizes": "180x180",
       "type": "image/png"
-    }
-  ],
-  "screenshots": [
+    },
     {
-      "src": "/screenshot-mobile.png",
-      "sizes": "390x844",
-      "type": "image/png",
-      "form_factor": "narrow"
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ],
   "shortcuts": [
     {
       "name": "Instagram Downloader",
       "short_name": "Instagram",
-      "description": "Download Instagram videos and images",
+      "description": "Download Instagram Reels and Posts",
       "url": "/instagram",
       "icons": [
         {
@@ -52,7 +50,7 @@
     {
       "name": "Twitter Downloader",
       "short_name": "Twitter",
-      "description": "Download Twitter videos and images",
+      "description": "Download Twitter/X videos and media",
       "url": "/twitter",
       "icons": [
         {
@@ -62,10 +60,10 @@
       ]
     },
     {
-      "name": "TikTok Downloader",
-      "short_name": "TikTok",
-      "description": "Download TikTok videos",
-      "url": "/tiktok",
+      "name": "Threads Downloader",
+      "short_name": "Threads",
+      "description": "Download Threads posts and videos",
+      "url": "/threads",
       "icons": [
         {
           "src": "/icon-192.png",

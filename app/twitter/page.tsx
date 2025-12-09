@@ -77,18 +77,19 @@ export default function TwitterDownloader() {
 
   return (
     <div className="min-h-screen bg-gray-50 transition-colors duration-300">
-      {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+      {/* Header Section */}
+      <header id="header-section" className="header-section fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
         <div className="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
           <Link href="/" className="p-2 rounded-full hover:bg-gray-100 transition-colors">
             <ArrowLeft className="w-5 h-5 text-gray-600" />
           </Link>
           <Image 
-            src="/icon.svg" 
+            src="/grab.svg" 
             alt="TotalGrab" 
             width={120} 
             height={32}
             className="h-8 w-auto"
+            priority
           />
         </div>
       </header>
@@ -97,7 +98,8 @@ export default function TwitterDownloader() {
       <main className="pt-20 pb-8 px-4">
         <div className="max-w-md mx-auto">
           {/* Hero Card */}
-          <Card className="overflow-hidden border-0 shadow-2xl mb-6 bg-linear-to-br from-blue-400 via-blue-500 to-blue-600">
+          <section id="hero-section" className="hero-section mb-6">
+            <Card className="overflow-hidden border-0 shadow-2xl bg-linear-to-br from-blue-400 via-blue-500 to-blue-600">
             <CardContent className="p-8 text-center text-white">
               <div className="mb-4">
                 <div className="inline-block">
@@ -115,9 +117,10 @@ export default function TwitterDownloader() {
               </p>
             </CardContent>
           </Card>
+          </section>
 
           {/* Input Section */}
-          <div className="mb-6">
+          <section id="input-section" className="input-section mb-6">
             <Input
               type="url"
               placeholder="🔗 Paste Twitter/X post link here..."
@@ -127,10 +130,11 @@ export default function TwitterDownloader() {
               className="h-14 text-base rounded-full px-6 bg-white border-gray-300 shadow-sm"
               disabled={loading}
             />
-          </div>
+          </section>
 
           {/* Download Button */}
-          <Button
+          <section id="download-button-section" className="download-button-section mb-4">
+            <Button
             onClick={handleFetchMedia}
             disabled={loading}
             className="w-full h-14 text-lg font-semibold rounded-full cursor-pointer bg-linear-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 shadow-lg hover:shadow-xl transition-all duration-300"
@@ -144,15 +148,19 @@ export default function TwitterDownloader() {
               'Download'
             )}
           </Button>
+          </section>
 
           {/* Error Message */}
+          <section id="error-section" className="error-section">
           {error && (
             <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl">
               <p className="text-sm text-red-700 text-center">{error}</p>
             </div>
           )}
+          </section>
 
           {/* Media Preview */}
+          <section id="media-preview-section" className="media-preview-section">
           {media && (
             <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Card className="overflow-hidden border-0 shadow-xl">
@@ -193,9 +201,10 @@ export default function TwitterDownloader() {
               </Button>
             </div>
           )}
+          </section>
 
-          {/* Supported Platforms */}
-          <div className="mt-8 text-center">
+          {/* Supported Platforms Section */}
+          <section id="platforms-section" className="platforms-section mt-8 text-center">
             <p className="text-sm text-gray-600 mb-3 font-medium">
               Supported Platform
             </p>
@@ -206,10 +215,10 @@ export default function TwitterDownloader() {
                 </svg>
               </div>
             </div>
-          </div>
+          </section>
 
-          {/* Badge */}
-          <div className="mt-6 text-center">
+          {/* Badge Section */}
+          <section id="badge-section" className="badge-section mt-6 text-center">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm border border-gray-200">
               <span className="text-sm font-medium text-gray-700">Free</span>
               <span className="px-2 py-0.5 text-xs font-bold text-white bg-blue-500 rounded-full">Social Media</span>
@@ -217,10 +226,11 @@ export default function TwitterDownloader() {
             <h3 className="text-xl font-bold text-gray-900 mt-2">
               Video Downloader
             </h3>
-          </div>
+          </section>
 
           {/* Instructions */}
-          <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-2xl">
+          <section id="instructions-section" className="instructions-section mt-8">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl">
             <h4 className="text-sm font-semibold text-blue-900 mb-2">How to use:</h4>
             <ol className="text-xs text-blue-800 space-y-1 list-decimal list-inside">
               <li>Copy the link to a Twitter/X post with video or image</li>
@@ -229,6 +239,7 @@ export default function TwitterDownloader() {
               <li>Preview and download your media!</li>
             </ol>
           </div>
+          </section>
         </div>
       </main>
     </div>

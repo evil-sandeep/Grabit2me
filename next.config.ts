@@ -1,9 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  turbopack: {},
-  // Ensure service worker and manifest are copied to build
+  reactStrictMode: true,
+  compress: true,
+  poweredByHeader: false,
+  
+  images: {
+    formats: ['image/webp', 'image/avif'],
+    deviceSizes: [640, 750, 828, 1080, 1200],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    dangerouslyAllowSVG: true,
+    contentDispositionType: 'attachment',
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+  },
+
+  // Ensure service worker and manifest are properly served
   async headers() {
     return [
       {
@@ -17,6 +28,10 @@ const nextConfig: NextConfig = {
             key: 'Service-Worker-Allowed',
             value: '/',
           },
+          {
+            key: 'Content-Type',
+            value: 'application/javascript; charset=utf-8',
+          },
         ],
       },
       {
@@ -25,6 +40,28 @@ const nextConfig: NextConfig = {
           {
             key: 'Content-Type',
             value: 'application/manifest+json',
+          },
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/(.*).svg',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/(.*).png',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },
