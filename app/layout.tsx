@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     siteName: "GrabIt",
     images: [
       {
-        url: "/manifest-icon-512.maskable.png",
+        url: "/og.png",
         width: 512,
         height: 512,
         alt: "ClipFetch Logo",
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "GrabIt - Social Media Video Downloader",
     description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
-    images: ["/manifest-icon-512.maskable.png"],
+    images: ["/og.png"],
   },
   icons: {
     icon: [
