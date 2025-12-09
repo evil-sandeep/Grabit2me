@@ -8,6 +8,7 @@ import { Download, Loader2, Sparkles } from 'lucide-react';
 import Image from 'next/image';
 import InstallPWA from '@/components/InstallPWA';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface MediaResponse {
   type: 'video' | 'image';
@@ -218,7 +219,7 @@ export default function Home() {
 
           {/* Media Preview Section */}
           <section id="media-preview-section" className="media-preview-section">
-          {media && (
+          {media ? (
             <div className="mt-6 space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
               <Card className="overflow-hidden border-0 shadow-xl">
                 <CardContent className="p-0">
@@ -266,6 +267,19 @@ export default function Home() {
                   </>
                 )}
               </Button>
+            </div>
+          ) : (
+            <div className="mt-6 space-y-4">
+              <Card className="overflow-hidden border-0 shadow-xl">
+                <CardContent className="p-0">
+                  <Skeleton className="w-full aspect-9/16 bg-gray-200" />
+                </CardContent>
+              </Card>
+              <div className="px-2 space-y-2">
+                <Skeleton className="h-4 w-3/4 bg-gray-200" />
+                <Skeleton className="h-3 w-1/2 bg-gray-200" />
+              </div>
+              <Skeleton className="w-full h-14 rounded-full bg-gray-200" />
             </div>
           )}
           </section>
