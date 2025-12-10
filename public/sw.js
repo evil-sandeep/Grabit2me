@@ -1,4 +1,4 @@
-const CACHE_NAME = 'grabit-v3';
+const CACHE_NAME = 'grabit-v4';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -8,10 +8,10 @@ const STATIC_ASSETS = [
   '/icon-128.png',
   '/icon-144.png',
   '/icon-152.png',
-  '/icon-192.png',
+  '/icon-192-solid.png',
   '/icon-256.png',
   '/icon-384.png',
-  '/icon-512.png',
+  '/icon-512-solid.png',
   '/apple-touch-icon.png',
   '/grab.svg',
 ];

@@ -1,22 +1,27 @@
-# PWA Icon & Cache Update Guide
+# PWA Icon & Cache Update Guide - v4
 
-## ✅ Changes Made
+## ✅ Latest Changes (v4)
 
-### 1. Status Bar Fixed
-- Changed from `black-translucent` to `default` (white background with dark icons)
-- Updated theme color to `#ffffff` (white)
-- Status bar will now show white with dark text/icons
+### 1. Fixed Splash Screen Icons
+- ✅ Created icons with **white background** (`icon-192-solid.png`, `icon-512-solid.png`)
+- ✅ Icons are now **visible** on black splash screens
+- ✅ No more invisible black icon on black background
 
-### 2. PWA Icons Updated
-- Updated service worker cache name to `grabit-v3`
-- Added version `3.0.0` to manifest.json
-- Added version parameter to manifest link `?v=3`
-- All new icon sizes are now cached
+### 2. Fixed PWA Install Prompt
+- ✅ Removed OG image from screenshots in manifest
+- ✅ Install prompt now shows **proper app icon** instead of OG image
+- ✅ Updated all icon references to use solid background versions
 
-### 3. Files Updated
-- ✅ `app/layout.tsx` - Status bar & theme colors
-- ✅ `public/manifest.json` - Version & theme color
-- ✅ `public/sw.js` - Cache name & assets list
+### 3. Status Bar (Already Fixed)
+- ✅ White background with dark icons
+- ✅ Clean, professional look
+
+### 4. Files Updated
+- ✅ `public/icon-192-solid.png` - New icon with white background
+- ✅ `public/icon-512-solid.png` - New icon with white background  
+- ✅ `public/manifest.json` - Version 4.0.0, removed screenshots, updated icons
+- ✅ `public/sw.js` - Cache v4 with new icons
+- ✅ `app/layout.tsx` - Updated icon references
 
 ## 🔄 To See New Icons on Your Device
 
