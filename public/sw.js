@@ -1,13 +1,19 @@
-const CACHE_NAME = 'totalgrab-v2';
+const CACHE_NAME = 'grabit-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/icon.svg',
-  '/grab.svg',
+  '/favicon.ico',
+  '/icon-72.png',
+  '/icon-96.png',
+  '/icon-128.png',
+  '/icon-144.png',
+  '/icon-152.png',
   '/icon-192.png',
+  '/icon-256.png',
+  '/icon-384.png',
   '/icon-512.png',
   '/apple-touch-icon.png',
-  '/favicon.png',
+  '/grab.svg',
 ];
 
 // Install event - cache static assets
