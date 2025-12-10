@@ -40,9 +40,9 @@ export default function InstallPWA() {
       const reminderDismissed = localStorage.getItem('pwa-reminder-dismissed');
       const reminderDismissedTime = localStorage.getItem('pwa-reminder-dismissed-time');
       
-      // Show reminder banner after 10 seconds if not dismissed or after 3 days
-      if (!reminderDismissed || (reminderDismissedTime && Date.now() - parseInt(reminderDismissedTime) > 3 * 24 * 60 * 60 * 1000)) {
-        setTimeout(() => setShowReminderBanner(true), 10000);
+      // Show reminder banner after 5 seconds if not dismissed or after 1 day
+      if (!reminderDismissed || (reminderDismissedTime && Date.now() - parseInt(reminderDismissedTime) > 1 * 24 * 60 * 60 * 1000)) {
+        setTimeout(() => setShowReminderBanner(true), 5000);
       }
     }
 
@@ -51,9 +51,9 @@ export default function InstallPWA() {
       const hasSeenPrompt = localStorage.getItem('ios-pwa-prompt-dismissed');
       const dismissedTime = localStorage.getItem('ios-pwa-prompt-dismissed-time');
       
-      // Show again after 7 days
-      if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
-        setTimeout(() => setShowIOSPrompt(true), 3000);
+      // Show again after 1 day
+      if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 1 * 24 * 60 * 60 * 1000)) {
+        setTimeout(() => setShowIOSPrompt(true), 1000);
       }
       return;
     }
@@ -67,9 +67,9 @@ export default function InstallPWA() {
         const hasSeenPrompt = localStorage.getItem('pwa-prompt-dismissed');
         const dismissedTime = localStorage.getItem('pwa-prompt-dismissed-time');
         
-        // Show again after 7 days
-        if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
-          setTimeout(() => setShowInstall(true), 3000);
+        // Show again after 1 day
+        if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 1 * 24 * 60 * 60 * 1000)) {
+          setTimeout(() => setShowInstall(true), 1000);
         }
       };
 
