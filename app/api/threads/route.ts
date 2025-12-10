@@ -14,8 +14,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if it's a Threads URL
-    const threadsRegex = /^https?:\/\/(www\.)?threads\.net\/@[A-Za-z0-9._]+\/post\/[A-Za-z0-9_-]+/;
+    // Check if it's a Threads URL (supports both threads.net and threads.com)
+    const threadsRegex = /^https?:\/\/(www\.)?(threads\.net|threads\.com)\/@[A-Za-z0-9._]+\/post\/[A-Za-z0-9_-]+/;
     if (!threadsRegex.test(url)) {
       return NextResponse.json(
         { error: 'Please provide a valid Threads post URL' },
@@ -23,10 +23,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Clean the URL by removing query parameters and normalize domain to threads.net
+    let cleanUrl = url.split('?')[0];
+    cleanUrl = cleanUrl.replace('threads.com', 'threads.net');
+
     // Fetch the Threads page
     let response;
     try {
-      response = await axios.get(url, {
+      response = await axios.get(cleanUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
           'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -71,14 +75,27 @@ export async function POST(request: NextRequest) {
                         $('meta[property="og:video:url"]').attr('content') ||
                         $('meta[property="og:video:secure_url"]').attr('content');
     
+    const videoType = $('meta[property="og:video:type"]').attr('content');
+    const imageMetaUrl = $('meta[property="og:image"]').attr('content') ||
+                        $('meta[property="og:image:url"]').attr('content');
+    
+    let isVideoPost = false;
+    
+    // Prioritize video if video meta tag exists or if type indicates video
     if (videoMetaUrl) {
       mediaUrl = videoMetaUrl;
       type = 'video';
-    } else {
-      // Try image meta tags
-      const imageMetaUrl = $('meta[property="og:image"]').attr('content') ||
-                          $('meta[property="og:image:url"]').attr('content');
-      if (imageMetaUrl) {
+    } else if (videoType && videoType.includes('video')) {
+      // Mark as video post - we need to extract from scripts
+      isVideoPost = true;
+    } else if (imageMetaUrl) {
+      // Check if the image URL looks like a video
+      const imageUrl = imageMetaUrl.toLowerCase();
+      if (imageUrl.includes('.mp4') || imageUrl.includes('video')) {
+        mediaUrl = imageMetaUrl;
+        type = 'video';
+      } else if (!isVideoPost) {
+        // Only set as image if we haven't detected it's a video post
         mediaUrl = imageMetaUrl;
         type = 'image';
       }
@@ -106,14 +123,33 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Method 3: Extract from inline JavaScript
-    if (!mediaUrl) {
+    // Method 3: Extract from inline JavaScript and window.__RELAY_STORE__
+    // Force extraction if we know it's a video post but haven't found URL yet
+    if (!mediaUrl || type === null || isVideoPost) {
       const allScripts = $('script').toArray();
       for (const script of allScripts) {
         const scriptContent = $(script).html() || '';
         
+        // Look for window.__RELAY_STORE__ or similar data stores (prioritize video)
+        if (scriptContent.includes('__RELAY_STORE__') || scriptContent.includes('PolarisPostRoot')) {
+          // Extract video_versions or video data
+          const videoVersionsMatch = scriptContent.match(/"video_versions":\s*\[([^\]]+)\]/);
+          if (videoVersionsMatch) {
+            try {
+              const videoData = JSON.parse('[' + videoVersionsMatch[1] + ']');
+              if (videoData.length > 0 && videoData[0].url) {
+                mediaUrl = videoData[0].url.replace(/\\u0026/g, '&').replace(/\\/g, '');
+                type = 'video';
+                break;
+              }
+            } catch (e) {
+              // Continue parsing
+            }
+          }
+        }
+        
         // Threads uses Instagram's infrastructure, so similar patterns apply
-        // Look for video_url pattern
+        // Look for video_url pattern (PRIORITY for videos)
         const videoUrlMatch = scriptContent.match(/"video_url":"([^"]+)"/);
         if (videoUrlMatch && videoUrlMatch[1]) {
           mediaUrl = videoUrlMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
@@ -129,20 +165,35 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        // Look for display_url for images
-        const displayUrlMatch = scriptContent.match(/"display_url":"([^"]+)"/);
-        if (displayUrlMatch && displayUrlMatch[1]) {
-          mediaUrl = displayUrlMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
-          type = 'image';
+        // Look for playback_url pattern (Threads specific)
+        const playbackUrlMatch = scriptContent.match(/"playback_url":"([^"]+)"/);
+        if (playbackUrlMatch && playbackUrlMatch[1]) {
+          mediaUrl = playbackUrlMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+          type = 'video';
           break;
         }
+      }
+      
+      // Only look for images if we haven't found a video yet AND it's not a video post
+      if (!mediaUrl && !isVideoPost) {
+        for (const script of allScripts) {
+          const scriptContent = $(script).html() || '';
 
-        // Look for image_versions2
-        const imageVersionMatch = scriptContent.match(/"image_versions2"[^}]*"url":"([^"]+)"/);
-        if (imageVersionMatch && imageVersionMatch[1]) {
-          mediaUrl = imageVersionMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
-          type = 'image';
-          break;
+          // Look for display_url for images
+          const displayUrlMatch = scriptContent.match(/"display_url":"([^"]+)"/);
+          if (displayUrlMatch && displayUrlMatch[1]) {
+            mediaUrl = displayUrlMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+            type = 'image';
+            break;
+          }
+
+          // Look for image_versions2
+          const imageVersionMatch = scriptContent.match(/"image_versions2"[^}]*"url":"([^"]+)"/);
+          if (imageVersionMatch && imageVersionMatch[1]) {
+            mediaUrl = imageVersionMatch[1].replace(/\\u0026/g, '&').replace(/\\/g, '');
+            type = 'image';
+            break;
+          }
         }
       }
     }
@@ -168,12 +219,42 @@ export async function POST(request: NextRequest) {
           }
         }
       }
+
+      // Try looking for scontent CDN URLs (Threads/Instagram CDN)
+      if (!mediaUrl) {
+        const imgWithScontent = $('img[src*="scontent"]').first();
+        if (imgWithScontent.length > 0) {
+          mediaUrl = imgWithScontent.attr('src') || null;
+          if (mediaUrl) {
+            type = 'image';
+          }
+        }
+      }
+    }
+
+    // Method 5: Search for any .mp4 URLs in the entire page source
+    if (!mediaUrl) {
+      const pageSource = response.data;
+      // Look for .mp4 URLs
+      const mp4Match = pageSource.match(/https?:\/\/[^\s"'<>]+\.mp4[^\s"'<>]*/);
+      if (mp4Match && mp4Match[0]) {
+        mediaUrl = mp4Match[0].replace(/\\u0026/g, '&').replace(/\\/g, '').replace(/&amp;/g, '&');
+        type = 'video';
+      }
     }
 
     // If still no media found, return error
     if (!mediaUrl || !type) {
+      console.error('Threads extraction failed. No media found in:', url);
+      console.error('Available meta tags:', {
+        ogVideo: $('meta[property="og:video"]').attr('content'),
+        ogImage: $('meta[property="og:image"]').attr('content'),
+        videoElements: $('video').length,
+        imageElements: $('img[src*="scontent"]').length,
+      });
+      
       return NextResponse.json(
-        { error: 'Could not extract media from this Threads post. The post may be private, contain no media, or use a format we don\'t support yet.' },
+        { error: 'Could not extract media from this Threads post. The post may be private, deleted, or contain only text. Please try a different post.' },
         { status: 404 }
       );
     }

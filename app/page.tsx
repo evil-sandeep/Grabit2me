@@ -34,7 +34,7 @@ export default function Home() {
       return 'instagram';
     } else if (urlLower.includes('twitter.com') || urlLower.includes('x.com')) {
       return 'twitter';
-    } else if (urlLower.includes('threads.net')) {
+    } else if (urlLower.includes('threads.net') || urlLower.includes('threads.com')) {
       return 'threads';
     }
 
