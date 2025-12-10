@@ -25,19 +25,25 @@ export default function InstallPWA() {
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     setIsIOS(ios);
 
+    // Check if it's a mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
     // Check if already installed
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
       return; // Already installed
     }
 
-    // Check reminder banner dismissal
-    const reminderDismissed = localStorage.getItem('pwa-reminder-dismissed');
-    const reminderDismissedTime = localStorage.getItem('pwa-reminder-dismissed-time');
-    
-    // Show reminder banner after 10 seconds if not dismissed or after 3 days
-    if (!reminderDismissed || (reminderDismissedTime && Date.now() - parseInt(reminderDismissedTime) > 3 * 24 * 60 * 60 * 1000)) {
-      setTimeout(() => setShowReminderBanner(true), 10000);
+    // Only show reminders on mobile devices
+    if (isMobile) {
+      // Check reminder banner dismissal
+      const reminderDismissed = localStorage.getItem('pwa-reminder-dismissed');
+      const reminderDismissedTime = localStorage.getItem('pwa-reminder-dismissed-time');
+      
+      // Show reminder banner after 10 seconds if not dismissed or after 3 days
+      if (!reminderDismissed || (reminderDismissedTime && Date.now() - parseInt(reminderDismissedTime) > 3 * 24 * 60 * 60 * 1000)) {
+        setTimeout(() => setShowReminderBanner(true), 10000);
+      }
     }
 
     // iOS specific prompt
@@ -52,25 +58,27 @@ export default function InstallPWA() {
       return;
     }
 
-    // Handle Android/Desktop install prompt
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-      
-      const hasSeenPrompt = localStorage.getItem('pwa-prompt-dismissed');
-      const dismissedTime = localStorage.getItem('pwa-prompt-dismissed-time');
-      
-      // Show again after 7 days
-      if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
-        setTimeout(() => setShowInstall(true), 3000);
-      }
-    };
+    // Handle Android install prompt (mobile only)
+    if (isMobile) {
+      const handler = (e: any) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        
+        const hasSeenPrompt = localStorage.getItem('pwa-prompt-dismissed');
+        const dismissedTime = localStorage.getItem('pwa-prompt-dismissed-time');
+        
+        // Show again after 7 days
+        if (!hasSeenPrompt || (dismissedTime && Date.now() - parseInt(dismissedTime) > 7 * 24 * 60 * 60 * 1000)) {
+          setTimeout(() => setShowInstall(true), 3000);
+        }
+      };
 
-    window.addEventListener('beforeinstallprompt', handler);
+      window.addEventListener('beforeinstallprompt', handler);
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
-    };
+      return () => {
+        window.removeEventListener('beforeinstallprompt', handler);
+      };
+    }
   }, []);
 
   const handleInstallClick = async () => {
@@ -136,7 +144,7 @@ export default function InstallPWA() {
                   <Button
                     size="sm"
                     onClick={handleReminderInstall}
-                    className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3 text-xs"
+                    className="bg-black hover:bg-gray-800 text-white h-8 px-4 text-xs rounded-full"
                   >
                     Install
                   </Button>
@@ -144,7 +152,7 @@ export default function InstallPWA() {
                     size="sm"
                     variant="ghost"
                     onClick={handleReminderDismiss}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -158,7 +166,7 @@ export default function InstallPWA() {
           <SheetContent side="bottom" className="h-auto">
             <SheetHeader className="text-left mb-4">
               <SheetTitle className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-blue-600" />
+                <Smartphone className="w-5 h-5 text-black" />
                 Install GrabIt App
               </SheetTitle>
               <SheetDescription>
@@ -168,19 +176,19 @@ export default function InstallPWA() {
             
             <div className="pb-4">
               <div className="space-y-4">
-                <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                  <h4 className="font-semibold text-sm text-blue-900 mb-3">Installation Steps:</h4>
-                  <ol className="space-y-3 text-sm text-blue-800">
+                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
+                  <h4 className="font-semibold text-sm text-gray-900 mb-3">Installation Steps:</h4>
+                  <ol className="space-y-3 text-sm text-gray-700">
                     <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">1</span>
+                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">1</span>
                       <span>Tap the <Share2 className="inline w-4 h-4 mx-1" /> Share button at the bottom of your screen</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span>
+                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">2</span>
                       <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">3</span>
+                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">3</span>
                       <span>Tap <strong>"Add"</strong> in the top right corner</span>
                     </li>
                   </ol>
@@ -194,7 +202,7 @@ export default function InstallPWA() {
             </div>
 
             <SheetFooter>
-              <Button onClick={handleIOSDismiss} className="w-full">
+              <Button onClick={handleIOSDismiss} className="w-full h-12 rounded-full bg-black hover:bg-gray-800 text-white font-semibold">
                 Got it!
               </Button>
             </SheetFooter>
@@ -221,7 +229,7 @@ export default function InstallPWA() {
                 <Button
                   size="sm"
                   onClick={handleReminderInstall}
-                  className="bg-blue-600 hover:bg-blue-700 text-white h-8 px-3 text-xs"
+                  className="bg-black hover:bg-gray-800 text-white h-8 px-4 text-xs rounded-full"
                 >
                   Install
                 </Button>
@@ -229,7 +237,7 @@ export default function InstallPWA() {
                   size="sm"
                   variant="ghost"
                   onClick={handleReminderDismiss}
-                  className="h-8 w-8 p-0"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -243,7 +251,7 @@ export default function InstallPWA() {
         <SheetContent side="bottom" className="h-auto">
           <SheetHeader className="text-left mb-4">
             <SheetTitle className="flex items-center gap-2">
-              <Download className="w-5 h-5 text-blue-600" />
+              <Download className="w-5 h-5 text-black" />
               Install GrabIt App
             </SheetTitle>
             <SheetDescription>
@@ -254,8 +262,8 @@ export default function InstallPWA() {
           <div className="pb-4">
             <div className="space-y-3">
               <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-blue-600" />
+                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Smartphone className="w-5 h-5 text-black" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Works Offline</h4>
@@ -264,8 +272,8 @@ export default function InstallPWA() {
               </div>
               
               <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <Download className="w-5 h-5 text-green-600" />
+                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Download className="w-5 h-5 text-black" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Lightning Fast</h4>
@@ -274,8 +282,8 @@ export default function InstallPWA() {
               </div>
               
               <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                  <Share2 className="w-5 h-5 text-purple-600" />
+                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <Share2 className="w-5 h-5 text-black" />
                 </div>
                 <div>
                   <h4 className="font-semibold text-gray-900">Easy Access</h4>
@@ -286,10 +294,10 @@ export default function InstallPWA() {
           </div>
 
           <SheetFooter className="flex-col sm:flex-col gap-2">
-            <Button onClick={handleInstallClick} className="w-full bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleInstallClick} className="w-full h-12 rounded-full bg-black hover:bg-gray-800 text-white font-semibold">
               Install Now
             </Button>
-            <Button variant="outline" onClick={handleDismiss} className="w-full">
+            <Button variant="outline" onClick={handleDismiss} className="w-full h-12 rounded-full border-2 border-gray-300 hover:bg-gray-50">
               Maybe Later
             </Button>
           </SheetFooter>
