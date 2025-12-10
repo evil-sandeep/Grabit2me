@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import PWARegister from "@/components/PWARegister";
 import { HeroHeader } from "@/components/section/Header";
-
+import { Analytics } from "@vercel/analytics/next"
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -135,6 +135,7 @@ export default function RootLayout({
       >
         <HeroHeader />
         <PWARegister />
+        <Analytics/>
         {children}
       </body>
     </html>
