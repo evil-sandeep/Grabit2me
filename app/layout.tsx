@@ -72,14 +72,12 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/manifest-icon-192.maskable.png", sizes: "192x192", type: "image/png" },
-      { url: "/manifest-icon-512.maskable.png", sizes: "512x512", type: "image/png" },
+      { url: "/adaptive-icon.png", sizes: "512x512", type: "image/png" },
     ],
     apple: [
-      { url: "/apple-icon-180.png", sizes: "180x180", type: "image/png" },
+      { url: "/adaptive-icon.png", sizes: "512x512", type: "image/png" },
     ],
-    shortcut: ["/icon.svg"],
+    shortcut: ["/adaptive-icon.png"],
   },
 };
 
@@ -99,8 +97,18 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="theme-color" content="#ffffff" />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" type="image/svg+xml" href="/icon.svg" />
-        <link rel="apple-touch-icon" href="/apple-icon-180.png" />
+        <link rel="icon" href="/adaptive-icon.png" />
+        
+        {/* Apple Touch Icons */}
+        <link rel="apple-touch-icon" href="/adaptive-icon.png" />
+        
+        {/* iOS Splash Screens */}
+        <link rel="apple-touch-startup-image" media="(prefers-color-scheme: light)" href="/ios-light.png" />
+        <link rel="apple-touch-startup-image" media="(prefers-color-scheme: dark)" href="/ios-dark.png" />
+        <link rel="apple-touch-startup-image" href="/ios-tinted.png" />
+        
+        {/* Theme color for iOS */}
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
       </head>
       <body
         className={`${inter.variable} font-mono antialiased`}
