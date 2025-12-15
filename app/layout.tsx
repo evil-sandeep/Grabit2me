@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Space_Mono, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import PWARegister from "@/components/PWARegister";
 import { HeroHeader } from "@/components/section/Header";
 import { Analytics } from "@vercel/analytics/next"
-const inter = Inter({
-  variable: "--font-inter",
+
+// Retro fonts
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
   subsets: ["latin"],
+  variable: "--font-space-mono",
+  display: 'swap',
+});
+
+const ibmPlexMono = IBM_Plex_Mono({
+  weight: ['400', '500', '600', '700'],
+  subsets: ["latin"],
+  variable: "--font-ibm-plex-mono",
+  display: 'swap',
 });
 
 export const viewport = {
@@ -131,7 +142,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/ios-tinted.png" />
       </head>
       <body
-        className={`${inter.variable} font-mono antialiased`}
+        className={`${spaceMono.variable} ${ibmPlexMono.variable} font-mono antialiased`}
       >
         <HeroHeader />
         <PWARegister />
