@@ -175,11 +175,11 @@ export default function Home() {
             </div>
 
             <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              grabit2me: links in, videos out
+              Download videos from any platform
             </h1>
 
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto sm:text-xl">
-              Paste a link, get your video. Works with Instagram, X, Threads, LinkedIn, Snapchat, and YouTube.
+              Free social media video downloader. Paste a link, get your video. Works with Instagram, X, Threads, LinkedIn, Snapchat, and YouTube.
             </p>
           </div>
         </div>
@@ -244,8 +244,7 @@ export default function Home() {
                       controlsList="nodownload"
                       className="w-full aspect-auto object-contain bg-black"
                       src={media.mediaUrl}
-                      onError={(e) => {
-                        console.error('Video load error:', e);
+                      onError={() => {
                         setError('Failed to load video preview. You can still try downloading it.');
                       }}
                     >
@@ -256,8 +255,7 @@ export default function Home() {
                       src={media.mediaUrl}
                       alt={media.title || 'Media'}
                       className="w-full aspect-auto object-contain"
-                      onError={(e) => {
-                        console.error('Image load error:', e);
+                      onError={() => {
                         setError('Failed to load image preview. You can still try downloading it.');
                       }}
                     />
@@ -281,7 +279,7 @@ export default function Home() {
                 {media.availableFormats && media.availableFormats.video.length > 0 ? (
                   <div className="space-y-3">
                     <p className="text-sm font-medium">Select Quality</p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {media.availableFormats.video.map((format, index) => (
                         <Button
                           key={index}
@@ -289,18 +287,18 @@ export default function Home() {
                           disabled={downloading}
                           variant="outline"
                           size="sm"
-                          className="justify-start"
+                          className="justify-start cursor-pointer text-xs sm:text-sm"
                         >
-                          <Download className="mr-2 h-4 w-4" />
-                          {format.quality}
-                          {format.hasAudio && <span className="ml-auto text-xs text-muted-foreground">Audio</span>}
+                          <Download className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <span className="truncate">{format.quality}</span>
+                          {format.hasAudio && <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">Audio</span>}
                         </Button>
                       ))}
                   </div>
                     {media.availableFormats.audio.length > 0 && (
                       <div className="space-y-3">
                         <p className="text-sm font-medium">Audio Only</p>
-                        <div className="grid grid-cols-2 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {media.availableFormats.audio.map((format, index) => (
                             <Button
                               key={index}
@@ -308,10 +306,10 @@ export default function Home() {
                               disabled={downloading}
                               variant="outline"
                               size="sm"
-                              className="justify-start"
+                              className="justify-start cursor-pointer text-xs sm:text-sm"
                             >
-                              <Download className="mr-2 h-4 w-4" />
-                              {format.quality}
+                              <Download className="mr-2 h-4 w-4 flex-shrink-0" />
+                              <span className="truncate">{format.quality}</span>
                             </Button>
                           ))}
                         </div>

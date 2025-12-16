@@ -1,7 +1,10 @@
 {
-  "name": "insta",
-  "version": "0.1.0",
+  "name": "grabit2me",
+  "version": "1.0.0",
   "private": true,
+  "description": "Social media video downloader - Download videos from Instagram, X, Threads, LinkedIn, Snapchat, and YouTube",
+  "author": "grabit2me",
+  "keywords": ["video downloader", "instagram", "twitter", "x", "threads", "youtube", "linkedin", "snapchat"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",

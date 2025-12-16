@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import PWARegister from "@/components/PWARegister";
 import { HeroHeader } from "@/components/section/Header";
+import { Footer } from "@/components/section/Footer";
 import { Analytics } from "@vercel/analytics/next"
 
 const inter = Inter({
@@ -20,43 +21,64 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://fckdl.vercel.app/'),
-  title: "GrabIt - Instagram, X & Threads Video Downloader",
-  description: "Download videos and images from Instagram, X (Twitter), and Threads instantly. One-click download for public posts, reels, and videos. Fast, free, and easy to use.",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "GrabIt",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.com/'),
+  title: {
+    default: "grabit2me - Free Social Media Video Downloader | Instagram, X, YouTube, Threads",
+    template: "%s | grabit2me"
   },
-  applicationName: "GrabIt",
+  description: "Download videos and images from Instagram, X (Twitter), Threads, LinkedIn, Snapchat, and YouTube instantly. Free, fast, and no login required. Best social media video downloader tool.",
   keywords: [
     "video downloader",
     "instagram downloader",
     "instagram reels downloader",
+    "instagram video downloader",
     "x downloader",
     "twitter downloader",
     "twitter video downloader",
     "threads downloader",
+    "youtube downloader",
+    "youtube video downloader",
+    "linkedin video downloader",
+    "snapchat downloader",
     "social media downloader",
     "download videos",
     "download reels",
     "save videos",
-    "grabit",
+    "free video downloader",
+    "online video downloader",
+    "grabit2me",
   ],
-  authors: [{ name: "GrabIt" }],
-  creator: "GrabIt",
-  publisher: "GrabIt",
+  authors: [{ name: "grabit2me", url: "https://grabit2me.com" }],
+  creator: "grabit2me",
+  publisher: "grabit2me",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "grabit2me",
+  },
+  applicationName: "grabit2me",
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://grabit.com",
-    title: "GrabIt - Social Media Video Downloader",
-    description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
-    siteName: "GrabIt",
+    url: "https://grabit2me.com",
+    title: "grabit2me - Social Media Video Downloader",
+    description: "Download videos and images from Instagram, X (Twitter), Threads, LinkedIn, Snapchat, and YouTube instantly",
+    siteName: "grabit2me",
     images: [
       {
         url: "/og.png",
@@ -68,8 +90,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "GrabIt - Social Media Video Downloader",
-    description: "Download videos and images from Instagram, X (Twitter), and Threads instantly",
+    title: "grabit2me - Social Media Video Downloader",
+    description: "Download videos and images from Instagram, X (Twitter), Threads, LinkedIn, Snapchat, and YouTube instantly",
     images: ["/og.png"],
   },
   icons: {
@@ -139,6 +161,7 @@ export default function RootLayout({
         <PWARegister />
         <Analytics/>
         {children}
+        <Footer />
       </body>
     </html>
   );
