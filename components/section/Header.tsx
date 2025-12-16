@@ -19,27 +19,25 @@ export const HeroHeader = () => {
     }, [])
     return (
         <header>
-            <nav className="fixed z-20 w-full px-2">
-                <div className={cn('mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12', isScrolled && 'bg-card border-[3px] border-foreground max-w-4xl shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] lg:px-5')}>
-                    <div className="relative flex items-center justify-between gap-6 py-3 lg:py-4">
+            <nav className="fixed top-0 z-50 w-full border-b border-transparent">
+                <div className={cn('mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 transition-all duration-300', isScrolled && 'border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60')}>
+                    <div className="flex h-16 items-center justify-between">
                         <div className="flex items-center">
                             <Link
                                 href="/"
-                                aria-label="home"
-                                className="flex items-center space-x-2 transition-transform hover:scale-105 active:scale-95">
-                               <Image src={"/grab.svg"} alt="logo" width={100} height={100} className='h-10 w-auto' />
+                                className="flex items-center space-x-2 font-semibold text-xl transition-opacity hover:opacity-80">
+                               <Image src={"/grab.svg"} alt="GrabIt" width={120} height={40} className='h-8 w-auto' />
                             </Link>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-4">
                             <Button
                                 asChild
-                                variant="outline"
-                                size="sm"
-                                className="gap-2 px-4 py-2">
-                                <Link href="https://github.com/Rdrudra99/" target="_blank" rel="noopener noreferrer">
+                                variant="ghost"
+                                size="sm">
+                                <Link href="https://github.com/Rdrudra99/" target="_blank" rel="noopener noreferrer" className="gap-2">
                                     <Github className="h-4 w-4" />
-                                    <span className="hidden sm:inline">Support</span>
+                                    <span className="hidden sm:inline">GitHub</span>
                                 </Link>
                             </Button>
                         </div>
