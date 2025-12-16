@@ -298,7 +298,7 @@ export default function InstallPWA() {
             <Button onClick={handleInstallClick} className="w-full h-12 rounded-full bg-black hover:bg-gray-800 text-white font-semibold">
               Install Now
             </Button>
-            <Button variant="outline" onClick={handleDismiss} className="w-full h-12 rounded-full border-2 border-gray-300 hover:bg-gray-50">
+            <Button variant="outline" onClick={handleDismiss} className="w-full h-12 rounded-full hover:bg-gray-50">
               Maybe Later
             </Button>
           </SheetFooter>
