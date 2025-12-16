@@ -79,17 +79,18 @@ export async function POST(request: NextRequest) {
       ? videoWithAudio[videoWithAudio.length - 1] // Lowest quality with audio
       : videoFormats[videoFormats.length - 1]; // Fallback to lowest quality video
     
-    // Use proxy URL with lowest quality for preview
-    const previewUrl = `/api/download?url=${encodeURIComponent(previewVideo.url)}&type=video&preview=true`;
+    // Use thumbnail for preview since YouTube URLs expire quickly
+    const previewUrl = data.cover || data.thumbnail || '';
     
     // Return all formats for download selection
     return NextResponse.json({
       type: 'video',
-      mediaUrl: previewUrl, // Lowest quality for preview (with audio if available)
+      mediaUrl: previewUrl, // Use thumbnail instead of video URL
       title: data.title || 'YouTube Video',
-      description: `${data.duration || ''}`,
+      description: `Duration: ${formatDuration(data.duration)}`,
       thumbnail: data.cover,
       duration: data.duration,
+      isYouTube: true, // Flag to handle differently in UI
       // Include all available formats for download
       availableFormats: {
         video: videoFormats.map((f: any) => ({
@@ -138,4 +139,12 @@ function extractQualityNumber(label: string): number {
   if (!label) return 0;
   const match = label.match(/(\d+)p?/);
   return match ? parseInt(match[1]) : 0;
+}
+
+// Helper function to format duration in seconds to readable format
+function formatDuration(seconds: number): string {
+  if (!seconds) return '';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
 }

@@ -14,32 +14,52 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch the media from Instagram
+    // Detect if it's a YouTube/Google Video URL
+    const isYouTube = url.includes('googlevideo.com') || url.includes('youtube.com');
+
+    // Fetch the media with appropriate headers
+    const headers: any = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': '*/*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Connection': 'keep-alive',
+    };
+
+    // YouTube-specific headers
+    if (isYouTube) {
+      headers['Referer'] = 'https://www.youtube.com/';
+      headers['Origin'] = 'https://www.youtube.com';
+      headers['Sec-Fetch-Dest'] = 'video';
+      headers['Sec-Fetch-Mode'] = 'no-cors';
+      headers['Sec-Fetch-Site'] = 'cross-site';
+      headers['Range'] = 'bytes=0-'; // Important for YouTube
+    } else {
+      headers['Referer'] = 'https://www.instagram.com/';
+      headers['Origin'] = 'https://www.instagram.com';
+      headers['Sec-Fetch-Dest'] = type === 'video' ? 'video' : 'image';
+      headers['Sec-Fetch-Mode'] = 'cors';
+      headers['Sec-Fetch-Site'] = 'cross-site';
+    }
+
     const response = await axios.get(url, {
-      responseType: 'arraybuffer',
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': '*/*',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Referer': 'https://www.linkedin.com/',
-        'Origin': 'https://www.linkedin.com',
-        'Sec-Fetch-Dest': 'video',
-        'Sec-Fetch-Mode': 'cors',
-        'Sec-Fetch-Site': 'cross-site',
-      },
-      timeout: 60000,
-      maxRedirects: 5,
+      responseType: 'stream', // Use stream instead of arraybuffer for large files
+      headers,
+      timeout: isYouTube ? 300000 : 120000, // 5 min for YouTube, 2 min for others
+      maxRedirects: 10,
+      validateStatus: (status) => status < 400,
     });
 
-    // Determine file extension
+    // Determine file extension and content type
     const ext = type === 'video' ? 'mp4' : 'jpg';
-    const contentType = type === 'video' ? 'video/mp4' : 'image/jpeg';
+    const contentType = response.headers['content-type'] || (type === 'video' ? 'video/mp4' : 'image/jpeg');
+    const contentLength = response.headers['content-length'];
     
     // Determine platform from URL for better naming
     let platform = 'media';
     if (url.includes('instagram.com') || url.includes('cdninstagram.com')) {
       platform = 'instagram';
+    } else if (url.includes('googlevideo.com') || url.includes('youtube.com')) {
+      platform = 'youtube';
     } else if (url.includes('linkedin.com') || url.includes('licdn.com')) {
       platform = 'linkedin';
     } else if (url.includes('twitter.com') || url.includes('twimg.com')) {
@@ -49,18 +69,25 @@ export async function GET(request: NextRequest) {
     }
 
     // Return the file with appropriate headers
-    // If preview=true, use inline disposition for browser preview
     const disposition = preview === 'true' 
       ? 'inline' 
       : `attachment; filename="${platform}-${type}-${Date.now()}.${ext}"`;
     
-    return new NextResponse(response.data, {
+    // Convert stream to buffer for Next.js response
+    const chunks: Buffer[] = [];
+    for await (const chunk of response.data) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+    
+    return new NextResponse(buffer, {
       headers: {
         'Content-Type': contentType,
         'Content-Disposition': disposition,
         'Cache-Control': 'public, max-age=3600',
-        'Content-Length': response.data.byteLength.toString(),
+        'Content-Length': contentLength || buffer.length.toString(),
         'Accept-Ranges': 'bytes',
+        'Access-Control-Allow-Origin': '*',
       },
     });
 
