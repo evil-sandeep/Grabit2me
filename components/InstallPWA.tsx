@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, X, Smartphone, Share2, Sparkles } from 'lucide-react';
+import { Download, X, Smartphone, Share2 } from 'lucide-react';
+import Image from 'next/image';
 import {
   Sheet,
   SheetContent,
@@ -134,11 +135,11 @@ export default function InstallPWA() {
         {showReminderBanner && (
           <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
             <Alert className="bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-              <Sparkles className="h-4 w-4 text-blue-600" />
+              <Image src="/ios-light.png" alt="Grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
               <AlertDescription className="flex items-center justify-between gap-3">
                 <div className="flex-1">
-                  <p className="font-semibold text-sm text-blue-900">Install GrabIt App</p>
-                  <p className="text-xs text-blue-700">Get instant access from your home screen!</p>
+                  <p className="font-semibold text-sm text-black">Install GrabIt App</p>
+                  <p className="text-xs text-black">Get instant access from your home screen!</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Button
@@ -218,12 +219,12 @@ export default function InstallPWA() {
       {/* Reminder Banner for Android/Desktop */}
       {showReminderBanner && (
         <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
-          <Alert className="bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-            <Sparkles className="h-4 w-4 text-blue-600" />
+          <Alert className="shadow-lg">
+            <Image src="/ios-light.png" alt="Grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
             <AlertDescription className="flex items-center justify-between gap-3">
               <div className="flex-1">
-                <p className="font-semibold text-sm text-blue-900">Install GrabIt App</p>
-                <p className="text-xs text-blue-700">Quick access, works offline, and faster!</p>
+                <p className="font-semibold text-sm text-black">Install GrabIt App</p>
+                <p className="text-xs text-black">Quick access, works offline, and faster!</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <Button
