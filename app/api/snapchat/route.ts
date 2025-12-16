@@ -73,16 +73,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use proxy URL to avoid CORS issues
-    const proxyUrl = `/api/download?url=${encodeURIComponent(video.url)}&type=video&preview=true`;
-    
     // Return data in the format expected by frontend
     return NextResponse.json({
       type: 'video',
-      mediaUrl: proxyUrl,
+      mediaUrl: video.url, // Use direct URL for both preview and download
       title: data.title || 'Snapchat Video',
       description: data.source || '',
-      originalUrl: video.url,
     });
 
   } catch (error: any) {

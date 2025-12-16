@@ -135,10 +135,10 @@ export default function InstallPWA() {
         {showReminderBanner && (
           <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
             <Alert className="bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-              <Image src="/ios-light.png" alt="Grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
+              <Image src="/ios-light.png" alt="grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
               <AlertDescription className="flex items-center justify-between gap-3">
                 <div className="flex-1">
-                  <p className="font-semibold text-sm text-black">Install GrabIt App</p>
+                  <p className="font-semibold text-sm text-black">Install grabit2me App</p>
                   <p className="text-xs text-black">Get instant access from your home screen!</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -168,7 +168,7 @@ export default function InstallPWA() {
             <SheetHeader className="text-left mb-4">
               <SheetTitle className="flex items-center gap-2">
                 <Smartphone className="w-5 h-5 text-black" />
-                Install GrabIt App
+                Install grabit2me App
               </SheetTitle>
               <SheetDescription>
                 Get the best experience with our app on your iPhone!
@@ -197,7 +197,7 @@ export default function InstallPWA() {
                 
                 <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
                   <Download className="w-4 h-4" />
-                  <span>Access GrabIt instantly from your home screen!</span>
+                  <span>Access grabit2me instantly from your home screen!</span>
                 </div>
               </div>
             </div>
@@ -220,10 +220,10 @@ export default function InstallPWA() {
       {showReminderBanner && (
         <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
           <Alert className="shadow-lg">
-            <Image src="/ios-light.png" alt="Grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
+            <Image src="/ios-light.png" alt="grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
             <AlertDescription className="flex items-center justify-between gap-3">
               <div className="flex-1">
-                <p className="font-semibold text-sm text-black">Install GrabIt App</p>
+                <p className="font-semibold text-sm text-black">Install grabit2me App</p>
                 <p className="text-xs text-black">Quick access, works offline, and faster!</p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -253,10 +253,10 @@ export default function InstallPWA() {
           <SheetHeader className="text-left mb-4">
             <SheetTitle className="flex items-center gap-2">
               <Download className="w-5 h-5 text-black" />
-              Install GrabIt App
+              Install grabit2me App
             </SheetTitle>
             <SheetDescription>
-              Install GrabIt for quick access and a better experience!
+              Install grabit2me for quick access and a better experience!
             </SheetDescription>
           </SheetHeader>
           
