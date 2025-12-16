@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const url = request.nextUrl.searchParams.get('url');
     const type = request.nextUrl.searchParams.get('type');
+    const preview = request.nextUrl.searchParams.get('preview');
 
     if (!url) {
       return NextResponse.json(
@@ -47,13 +48,19 @@ export async function GET(request: NextRequest) {
       platform = 'facebook';
     }
 
-    // Return the file with download headers
+    // Return the file with appropriate headers
+    // If preview=true, use inline disposition for browser preview
+    const disposition = preview === 'true' 
+      ? 'inline' 
+      : `attachment; filename="${platform}-${type}-${Date.now()}.${ext}"`;
+    
     return new NextResponse(response.data, {
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${platform}-${type}-${Date.now()}.${ext}"`,
-        'Cache-Control': 'no-cache',
+        'Content-Disposition': disposition,
+        'Cache-Control': 'public, max-age=3600',
         'Content-Length': response.data.byteLength.toString(),
+        'Accept-Ranges': 'bytes',
       },
     });
 

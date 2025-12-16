@@ -11,9 +11,24 @@ interface MediaResponse {
   mediaUrl: string;
   title?: string;
   description?: string;
+  availableFormats?: {
+    video: Array<{
+      quality: string;
+      extension: string;
+      url: string;
+      qualityNum: number;
+      hasAudio?: boolean;
+    }>;
+    audio: Array<{
+      quality: string;
+      extension: string;
+      url: string;
+    }>;
+  };
+  previewQuality?: string;
 }
 
-type Platform = 'instagram' | 'twitter' | 'threads' | 'unsupported';
+type Platform = 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'snapchat' | 'youtube' | 'unsupported';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -21,6 +36,7 @@ export default function Home() {
   const [downloading, setDownloading] = useState(false);
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
+  const [selectedFormat, setSelectedFormat] = useState<string>(''); // For format selection
   const previousUrlRef = useRef('');
 
   const detectPlatform = (url: string): Platform => {
@@ -32,6 +48,12 @@ export default function Home() {
       return 'twitter';
     } else if (urlLower.includes('threads.net') || urlLower.includes('threads.com')) {
       return 'threads';
+    } else if (urlLower.includes('linkedin.com')) {
+      return 'linkedin';
+    } else if (urlLower.includes('snapchat.com')) {
+      return 'snapchat';
+    } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
+      return 'youtube';
     }
 
     return 'unsupported';
@@ -62,7 +84,7 @@ export default function Home() {
     const platform = detectPlatform(url);
 
     if (platform === 'unsupported') {
-      setError('Platform not supported. Currently supported: Instagram, Twitter/X, and Threads');
+      setError('Platform not supported. Currently supported: Instagram, Twitter/X, Threads, LinkedIn, Snapchat, and YouTube');
       return;
     }
 
@@ -75,7 +97,13 @@ export default function Home() {
         ? '/api/instagram'
         : platform === 'twitter'
           ? '/api/twitter'
-          : '/api/threads';
+          : platform === 'threads'
+            ? '/api/threads'
+            : platform === 'linkedin'
+              ? '/api/linkedin'
+              : platform === 'snapchat'
+                ? '/api/snapchat'
+                : '/api/youtube';
 
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -109,12 +137,14 @@ export default function Home() {
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = async (customUrl?: string) => {
     if (!media) return;
 
     setDownloading(true);
     try {
-      const downloadUrl = `/api/download?url=${encodeURIComponent(media.mediaUrl)}&type=${media.type}`;
+      // Use custom URL if provided (for format selection), otherwise use default mediaUrl
+      const urlToDownload = customUrl || media.mediaUrl;
+      const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}`;
 
       const link = document.createElement('a');
       link.href = downloadUrl;
@@ -145,7 +175,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight font-mono leading-tight">
-              DOWNLOAD INSTAGRAM, X & THREADS VIDEOS IN SECONDS
+              DOWNLOAD VIDEOS FROM INSTAGRAM, X, THREADS, LINKEDIN, SNAPCHAT & YOUTUBE
             </h1>
 
             <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto font-mono uppercase tracking-wide">
@@ -224,8 +254,13 @@ export default function Home() {
                   {media.type === 'video' ? (
                     <video
                       controls
+                      controlsList="nodownload"
                       className="w-full aspect-auto object-contain bg-black"
                       src={media.mediaUrl}
+                      onError={(e) => {
+                        console.error('Video load error:', e);
+                        setError('Failed to load video preview. You can still try downloading it.');
+                      }}
                     >
                       Your browser does not support the video tag.
                     </video>
@@ -234,6 +269,10 @@ export default function Home() {
                       src={media.mediaUrl}
                       alt={media.title || 'Media'}
                       className="w-full aspect-auto object-contain"
+                      onError={(e) => {
+                        console.error('Image load error:', e);
+                        setError('Failed to load image preview. You can still try downloading it.');
+                      }}
                     />
                   )}
                 </div>
@@ -243,34 +282,81 @@ export default function Home() {
                 <div className="px-2 border-l-4 border-[#E07A3E] pl-4">
                   <p className="text-sm font-bold uppercase tracking-wide">{media.title}</p>
                   {media.description && (
-                    <p className="text-xs text-muted-foreground mt-1 font-mono">@{media.description}</p>
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">{media.description}</p>
+                  )}
+                  {media.previewQuality && (
+                    <p className="text-xs text-muted-foreground mt-1 font-mono">Preview: {media.previewQuality}</p>
                   )}
                 </div>
               )}
 
-              <Button
-                onClick={handleDownload}
-                disabled={downloading}
-                variant="secondary"
-                className="w-full h-14 text-base font-bold cursor-pointer"
-              >
-                {downloading ? (
-                  <>
-                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                    Starting Download...
-                  </>
-                ) : (
-                  <>
-                    <Download className="mr-2 h-5 w-5" />
-                    Download {media.type === 'video' ? 'Video' : 'Image'}
-                  </>
-                )}
-              </Button>
+              {/* Format Selection for YouTube videos */}
+              {media.availableFormats && media.availableFormats.video.length > 0 && (
+                <div className="space-y-3">
+                  <p className="text-xs font-bold uppercase tracking-wider text-foreground">⟩ SELECT QUALITY</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {media.availableFormats.video.map((format, index) => (
+                      <Button
+                        key={index}
+                        onClick={() => handleDownload(format.url)}
+                        disabled={downloading}
+                        variant="outline"
+                        className="h-12 text-sm font-bold border-2"
+                      >
+                        <Download className="mr-2 h-4 w-4" />
+                        {format.quality}
+                        {format.hasAudio && <span className="ml-1 text-xs">🔊</span>}
+                      </Button>
+                    ))}
+                  </div>
+                  {media.availableFormats.audio.length > 0 && (
+                    <>
+                      <p className="text-xs font-bold uppercase tracking-wider text-foreground mt-4">⟩ AUDIO ONLY</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        {media.availableFormats.audio.map((format, index) => (
+                          <Button
+                            key={index}
+                            onClick={() => handleDownload(format.url)}
+                            disabled={downloading}
+                            variant="outline"
+                            className="h-12 text-sm font-bold border-2"
+                          >
+                            <Download className="mr-2 h-4 w-4" />
+                            Audio {format.quality}
+                          </Button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* Default download button for non-YouTube platforms */}
+              {!media.availableFormats && (
+                <Button
+                  onClick={() => handleDownload()}
+                  disabled={downloading}
+                  variant="secondary"
+                  className="w-full h-14 text-base font-bold cursor-pointer"
+                >
+                  {downloading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      Starting Download...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="mr-2 h-5 w-5" />
+                      Download {media.type === 'video' ? 'Video' : 'Image'}
+                    </>
+                  )}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="mt-6 space-y-4 opacity-40">
               <div className="overflow-hidden border-[3px] border-foreground bg-muted">
-                <div className="w-full aspect-9/16 bg-muted flex items-center justify-center">
+                <div className="w-full aspect-video bg-muted flex items-center justify-center min-h-[300px]">
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">PREVIEW</p>
                 </div>
               </div>
@@ -314,6 +400,30 @@ export default function Home() {
                 </svg>
               </div>
               <span className="text-[10px] font-bold uppercase tracking-widest">THREADS</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 group cursor-default">
+              <div className="w-16 h-16 border-[3px] border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] flex items-center justify-center transition-transform group-hover:translate-y-0.5 group-hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" title="LinkedIn">
+                <svg className="w-8 h-8 text-foreground" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                </svg>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest">LINKEDIN</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 group cursor-default">
+              <div className="w-16 h-16 border-[3px] border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] flex items-center justify-center transition-transform group-hover:translate-y-0.5 group-hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" title="Snapchat">
+                <svg className="w-8 h-8 text-foreground" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.149-.052-.227.015-.195.168-.465.435-.531 3.236-.556 4.672-3.919 4.702-4.054.015-.015.028-.031.028-.044.029-.075.061-.134.074-.18.104-.225.179-.54.036-.838-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z"/>
+                </svg>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest">SNAPCHAT</span>
+            </div>
+            <div className="flex flex-col items-center gap-2 group cursor-default">
+              <div className="w-16 h-16 border-[3px] border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] flex items-center justify-center transition-transform group-hover:translate-y-0.5 group-hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" title="YouTube">
+                <svg className="w-8 h-8 text-foreground" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest">YOUTUBE</span>
             </div>
           </div>
         </section>
