@@ -179,6 +179,14 @@ export default function Home() {
       alert('Download failed. Please try again.');
     }
   };
+
+  const handleReset = () => {
+    setUrl('');
+    setMedia(null);
+    setError('');
+    previousUrlRef.current = '';
+  };
+
   return (
     <div className="min-h-screen">
       <InstallPWA />
@@ -202,15 +210,43 @@ export default function Home() {
         <div className="mx-auto max-w-2xl mt-12">
           <div className="rounded-2xl border bg-card p-6 shadow-sm">
             <div className="space-y-4">
-              <Input
-                type="url"
-                placeholder="https://instagram.com/p/..."
-                value={url}
-                onChange={handleUrlChange}
-                onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
-                className="h-12"
-                disabled={loading}
-              />
+              <div className="flex gap-2">
+                <Input
+                  type="url"
+                  placeholder="https://instagram.com/p/..."
+                  value={url}
+                  onChange={handleUrlChange}
+                  onKeyDown={(e) => e.key === 'Enter' && handleFetchMedia()}
+                  className="h-12 flex-1"
+                  disabled={loading}
+                />
+                {(url || media) && (
+                  <Button
+                    onClick={handleReset}
+                    variant="outline"
+                    size="lg"
+                    className="h-12 px-4 cursor-pointer"
+                    title="Clear and download another"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                      <path d="M21 3v5h-5" />
+                      <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                      <path d="M3 16v5h5" />
+                    </svg>
+                  </Button>
+                )}
+              </div>
 
               {!loading && !media && url.trim() && (
                 <Button
@@ -322,9 +358,9 @@ export default function Home() {
                           size="sm"
                           className="justify-start cursor-pointer text-xs sm:text-sm"
                         >
-                          <Download className="mr-2 h-4 w-4 flex-shrink-0" />
+                          <Download className="mr-2 h-4 w-4 shrink-0" />
                           <span className="truncate">{format.quality}</span>
-                          {format.hasAudio && <span className="ml-auto text-xs text-muted-foreground flex-shrink-0">Audio</span>}
+                          {format.hasAudio && <span className="ml-auto text-xs text-muted-foreground shrink-0">Audio</span>}
                         </Button>
                       ))}
                   </div>
@@ -341,7 +377,7 @@ export default function Home() {
                               size="sm"
                               className="justify-start cursor-pointer text-xs sm:text-sm"
                             >
-                              <Download className="mr-2 h-4 w-4 flex-shrink-0" />
+                              <Download className="mr-2 h-4 w-4 shrink-0" />
                               <span className="truncate">{format.quality}</span>
                             </Button>
                           ))}
