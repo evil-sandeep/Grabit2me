@@ -1,9 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Download, X, Smartphone, Share2 } from 'lucide-react';
-import Image from 'next/image';
 import {
   Sheet,
   SheetContent,
@@ -12,7 +10,6 @@ import {
   SheetTitle,
   SheetFooter,
 } from '@/components/ui/sheet';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -134,79 +131,90 @@ export default function InstallPWA() {
         {/* Reminder Banner for iOS */}
         {showReminderBanner && (
           <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
-            <Alert className="bg-linear-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-lg">
-              <Image src="/ios-light.png" alt="grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
-              <AlertDescription className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                  <p className="font-semibold text-sm text-black">Install grabit2me App</p>
-                  <p className="text-xs text-black">Get instant access from your home screen!</p>
+            <div className="bg-[#ffd93d] border-3 border-[#1a1a1a] p-4" style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}>
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#ff6b9d] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Smartphone className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="font-black text-sm text-[#1a1a1a]">Install grabit2me App</p>
+                    <p className="text-xs font-medium text-[#1a1a1a]">Get instant access from your home screen!</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Button
-                    size="sm"
+                  <button
                     onClick={handleReminderInstall}
-                    className="bg-black hover:bg-gray-800 text-white h-8 px-4 text-xs rounded-full"
+                    className="h-10 px-4 bg-[#1a1a1a] text-white border-2 border-[#1a1a1a] font-bold text-sm transition-all"
+                    style={{ boxShadow: '2px 2px 0px 0px #ff6b9d' }}
                   >
                     Install
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
+                  </button>
+                  <button
                     onClick={handleReminderDismiss}
-                    className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                    className="h-10 w-10 bg-white border-2 border-[#1a1a1a] font-bold flex items-center justify-center transition-all"
+                    style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                   >
                     <X className="h-4 w-4" />
-                  </Button>
+                  </button>
                 </div>
-              </AlertDescription>
-            </Alert>
+              </div>
+            </div>
           </div>
         )}
 
         <Sheet open={showIOSPrompt} onOpenChange={setShowIOSPrompt}>
-          <SheetContent side="bottom" className="h-auto">
-            <SheetHeader className="text-left mb-4">
-              <SheetTitle className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-black" />
-                Install grabit2me App
-              </SheetTitle>
-              <SheetDescription>
-                Get the best experience with our app on your iPhone!
-              </SheetDescription>
-            </SheetHeader>
-            
-            <div className="pb-4">
-              <div className="space-y-4">
-                <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
-                  <h4 className="font-semibold text-sm text-gray-900 mb-3">Installation Steps:</h4>
-                  <ol className="space-y-3 text-sm text-gray-700">
-                    <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">1</span>
-                      <span>Tap the <Share2 className="inline w-4 h-4 mx-1" /> Share button at the bottom of your screen</span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">2</span>
-                      <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
-                    </li>
-                    <li className="flex items-start gap-3">
-                      <span className="shrink-0 w-6 h-6 rounded-full bg-black text-white flex items-center justify-center text-xs font-bold">3</span>
-                      <span>Tap <strong>"Add"</strong> in the top right corner</span>
-                    </li>
-                  </ol>
-                </div>
-                
-                <div className="flex items-center gap-2 text-xs text-gray-500 bg-gray-50 p-3 rounded-lg">
-                  <Download className="w-4 h-4" />
-                  <span>Access grabit2me instantly from your home screen!</span>
+          <SheetContent side="bottom" className="h-auto bg-[#fef3c7] border-t-3 border-[#1a1a1a] rounded-none p-0">
+            <div className="p-5 sm:p-6">
+              <SheetHeader className="text-left mb-5">
+                <SheetTitle className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-[#ff6b9d] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Smartphone className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-black text-xl">Install grabit2me App</span>
+                </SheetTitle>
+                <SheetDescription className="text-[#525252] font-medium mt-2">
+                  Get the best experience with our app on your iPhone!
+                </SheetDescription>
+              </SheetHeader>
+              
+              <div className="pb-5">
+                <div className="space-y-4">
+                  <div className="bg-white border-3 border-[#1a1a1a] p-4" style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}>
+                    <h4 className="font-black text-base text-[#1a1a1a] mb-4">Installation Steps:</h4>
+                    <ol className="space-y-4 text-sm text-[#525252]">
+                      <li className="flex items-start gap-3">
+                        <span className="shrink-0 w-8 h-8 bg-[#6bcfff] border-2 border-[#1a1a1a] flex items-center justify-center text-sm font-black" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>1</span>
+                        <span className="pt-1.5 font-medium">Tap the <Share2 className="inline w-4 h-4 mx-1" /> Share button at the bottom of your screen</span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="shrink-0 w-8 h-8 bg-[#98ee99] border-2 border-[#1a1a1a] flex items-center justify-center text-sm font-black" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>2</span>
+                        <span className="pt-1.5 font-medium">Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+                      </li>
+                      <li className="flex items-start gap-3">
+                        <span className="shrink-0 w-8 h-8 bg-[#ff6b9d] border-2 border-[#1a1a1a] flex items-center justify-center text-sm font-black text-white" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>3</span>
+                        <span className="pt-1.5 font-medium">Tap <strong>"Add"</strong> in the top right corner</span>
+                      </li>
+                    </ol>
+                  </div>
+                  
+                  <div className="flex items-center gap-3 text-sm bg-[#6bcfff] border-2 border-[#1a1a1a] p-3" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Download className="w-5 h-5" />
+                    <span className="font-bold">Access grabit2me instantly from your home screen!</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <SheetFooter>
-              <Button onClick={handleIOSDismiss} className="w-full h-12 rounded-full bg-black hover:bg-gray-800 text-white font-semibold">
-                Got it!
-              </Button>
-            </SheetFooter>
+              <SheetFooter>
+                <button 
+                  onClick={handleIOSDismiss} 
+                  className="w-full h-14 bg-[#1a1a1a] text-white border-3 border-[#1a1a1a] font-black text-lg transition-all"
+                  style={{ boxShadow: '4px 4px 0px 0px #ff6b9d' }}
+                >
+                  Got it!
+                </button>
+              </SheetFooter>
+            </div>
           </SheetContent>
         </Sheet>
       </>
@@ -219,89 +227,104 @@ export default function InstallPWA() {
       {/* Reminder Banner for Android/Desktop */}
       {showReminderBanner && (
         <div className="fixed bottom-4 left-4 right-4 z-40 animate-in slide-in-from-bottom-5 duration-500">
-          <Alert className="shadow-lg">
-            <Image src="/ios-light.png" alt="grabit2me" width={16} height={16} className="h-4 w-4 rounded-sm" />
-            <AlertDescription className="flex items-center justify-between gap-3">
-              <div className="flex-1">
-                <p className="font-semibold text-sm text-black">Install grabit2me App</p>
-                <p className="text-xs text-black">Quick access, works offline, and faster!</p>
+          <div className="bg-[#98ee99] border-3 border-[#1a1a1a] p-4" style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#ff6b9d] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                  <Download className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <p className="font-black text-sm text-[#1a1a1a]">Install grabit2me App</p>
+                  <p className="text-xs font-medium text-[#1a1a1a]">Quick access, works offline, and faster!</p>
+                </div>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  size="sm"
+                <button
                   onClick={handleReminderInstall}
-                  className="bg-black hover:bg-gray-800 text-white h-8 px-4 text-xs rounded-full"
+                  className="h-10 px-4 bg-[#1a1a1a] text-white border-2 border-[#1a1a1a] font-bold text-sm transition-all"
+                  style={{ boxShadow: '2px 2px 0px 0px #ff6b9d' }}
                 >
                   Install
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
+                </button>
+                <button
                   onClick={handleReminderDismiss}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+                  className="h-10 w-10 bg-white border-2 border-[#1a1a1a] font-bold flex items-center justify-center transition-all"
+                  style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                 >
                   <X className="h-4 w-4" />
-                </Button>
+                </button>
               </div>
-            </AlertDescription>
-          </Alert>
+            </div>
+          </div>
         </div>
       )}
 
       <Sheet open={showInstall} onOpenChange={setShowInstall}>
-        <SheetContent side="bottom" className="h-auto">
-          <SheetHeader className="text-left mb-4">
-            <SheetTitle className="flex items-center gap-2">
-              <Download className="w-5 h-5 text-black" />
-              Install grabit2me App
-            </SheetTitle>
-            <SheetDescription>
-              Install grabit2me for quick access and a better experience!
-            </SheetDescription>
-          </SheetHeader>
-          
-          <div className="pb-4">
-            <div className="space-y-3">
-              <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Smartphone className="w-5 h-5 text-black" />
+        <SheetContent side="bottom" className="h-auto bg-[#fef3c7] border-t-3 border-[#1a1a1a] rounded-none p-0">
+          <div className="p-5 sm:p-6">
+            <SheetHeader className="text-left mb-5">
+              <SheetTitle className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#98ee99] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                  <Download className="w-5 h-5 text-[#1a1a1a]" />
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Works Offline</h4>
-                  <p className="text-gray-600 text-xs">Access your downloads even without internet</p>
+                <span className="font-black text-xl">Install grabit2me App</span>
+              </SheetTitle>
+              <SheetDescription className="text-[#525252] font-medium mt-2">
+                Install grabit2me for quick access and a better experience!
+              </SheetDescription>
+            </SheetHeader>
+            
+            <div className="pb-5">
+              <div className="space-y-4">
+                <div className="flex items-start gap-4 bg-white border-2 border-[#1a1a1a] p-4" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                  <div className="shrink-0 w-12 h-12 bg-[#6bcfff] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Smartphone className="w-6 h-6 text-[#1a1a1a]" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-[#1a1a1a]">Works Offline</h4>
+                    <p className="text-[#525252] text-sm font-medium">Access your downloads even without internet</p>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Download className="w-5 h-5 text-black" />
+                
+                <div className="flex items-start gap-4 bg-white border-2 border-[#1a1a1a] p-4" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                  <div className="shrink-0 w-12 h-12 bg-[#ffd93d] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Download className="w-6 h-6 text-[#1a1a1a]" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-[#1a1a1a]">Lightning Fast</h4>
+                    <p className="text-[#525252] text-sm font-medium">Native app performance and speed</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Lightning Fast</h4>
-                  <p className="text-gray-600 text-xs">Native app performance and speed</p>
-                </div>
-              </div>
-              
-              <div className="flex items-start gap-3 text-sm">
-                <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                  <Share2 className="w-5 h-5 text-black" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-gray-900">Easy Access</h4>
-                  <p className="text-gray-600 text-xs">Launch directly from your home screen</p>
+                
+                <div className="flex items-start gap-4 bg-white border-2 border-[#1a1a1a] p-4" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                  <div className="shrink-0 w-12 h-12 bg-[#ff6b9d] border-2 border-[#1a1a1a] flex items-center justify-center" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+                    <Share2 className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-[#1a1a1a]">Easy Access</h4>
+                    <p className="text-[#525252] text-sm font-medium">Launch directly from your home screen</p>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <SheetFooter className="flex-col sm:flex-col gap-2">
-            <Button onClick={handleInstallClick} className="w-full h-12 rounded-full bg-black hover:bg-gray-800 text-white font-semibold">
-              Install Now
-            </Button>
-            <Button variant="outline" onClick={handleDismiss} className="w-full h-12 rounded-full hover:bg-gray-50">
-              Maybe Later
-            </Button>
-          </SheetFooter>
+            <SheetFooter className="flex-col sm:flex-col gap-3">
+              <button 
+                onClick={handleInstallClick} 
+                className="w-full h-14 bg-[#1a1a1a] text-white border-3 border-[#1a1a1a] font-black text-lg transition-all"
+                style={{ boxShadow: '4px 4px 0px 0px #98ee99' }}
+              >
+                Install Now
+              </button>
+              <button 
+                onClick={handleDismiss} 
+                className="w-full h-12 bg-white text-[#1a1a1a] border-3 border-[#1a1a1a] font-bold text-base transition-all"
+                style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
+              >
+                Maybe Later
+              </button>
+            </SheetFooter>
+          </div>
         </SheetContent>
       </Sheet>
     </>

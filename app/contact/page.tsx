@@ -22,26 +22,26 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen py-24">
-      <div className="container max-w-4xl mx-auto px-4">
-        <Link href="/" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-8">
-          <ArrowLeft className="h-4 w-4" />
-          Back to Home
+    <div className="min-h-screen py-20 sm:py-24 bg-background">
+      <div className="container max-w-4xl mx-auto px-3 sm:px-4">
+        <Link href="/" className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-white border-2 sm:border-3 border-[#1a1a1a] font-bold text-xs sm:text-sm transition-all hover:shadow-md mb-6 sm:mb-8" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}>
+          <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+          <span>Back to Home</span>
         </Link>
 
         <div className="space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl font-bold">Contact Us</h1>
-            <p className="text-lg text-muted-foreground">
+          <div className="space-y-4 mb-8">
+            <h1 className="text-4xl sm:text-5xl font-black inline-block bg-[#ff6b9d] border-3 border-[#1a1a1a] px-6 py-3 -rotate-1 shadow-md">Contact Us</h1>
+            <p className="text-lg font-medium">
               Have a question or feedback? We'd love to hear from you.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              <div className="rounded-2xl border bg-card p-6 space-y-4">
+              <div className="bg-white border-3 border-[#1a1a1a] p-6 space-y-4 shadow-lg">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="w-12 h-12 bg-primary border-2 border-[#1a1a1a] flex items-center justify-center">
                     <Mail className="h-5 w-5" />
                   </div>
                   <div>
