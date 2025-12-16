@@ -21,7 +21,7 @@ export const viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.com/'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.vercel.app/'),
   title: {
     default: "grabit2me - Free Social Media Video Downloader | Instagram, X, YouTube, Threads",
     template: "%s | grabit2me"
@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     "online video downloader",
     "grabit2me",
   ],
-  authors: [{ name: "grabit2me", url: "https://grabit2me.com" }],
+  authors: [{ name: "grabit2me", url: "https://grabit2me.vercel.app" }],
   creator: "grabit2me",
   publisher: "grabit2me",
   robots: {
@@ -75,16 +75,17 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://grabit2me.com",
+    url: process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.vercel.app/',
     title: "grabit2me - Social Media Video Downloader",
     description: "Download videos and images from Instagram, X (Twitter), Threads, LinkedIn, Snapchat, and YouTube instantly",
     siteName: "grabit2me",
     images: [
       {
-        url: "/og.png",
+        url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.vercel.app/'}/og.png`,
         width: 1200,
         height: 630,
-        alt: "GrabIt - Download videos from Instagram, X & Threads",
+        alt: "grabit2me - Download videos from Instagram, X, YouTube & more",
+        type: "image/png",
       },
     ],
   },
@@ -92,7 +93,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "grabit2me - Social Media Video Downloader",
     description: "Download videos and images from Instagram, X (Twitter), Threads, LinkedIn, Snapchat, and YouTube instantly",
-    images: ["/og.png"],
+    images: [`${process.env.NEXT_PUBLIC_APP_URL || 'https://grabit2me.vercel.app/'}/og.png`],
+    creator: "@grabit2me",
   },
   icons: {
     icon: [

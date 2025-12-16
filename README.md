@@ -66,5 +66,8 @@ MIT License - Educational purposes only. Please respect content creators' rights
 
 ---
 
+<!-- promt used to create the opengraph image -->
+<!-- Create a bold NeoBrutalism/RetroUI style social media preview image (1200x630px). Bright cream/beige background (#fffbeb). Center a tilted hot pink (#ff6b9d) rectangle with thick black 3px border and hard black drop shadow (no blur). Inside the pink box, bold black text "grabit2me" in a chunky sans-serif font. Below it, a yellow (#ffd93d) banner with black border containing "paste a link, grab the video" tagline. Add small decorative elements: a cyan (#67e8f9) circle and yellow square with black borders floating in corners. Include simple social media icons (Instagram, YouTube, X) in small black-bordered boxes at the bottom. Style: flat design, no gradients, hard shadows only, bold graphic poster aesthetic, Memphis design influence. -->
+
 Built with ❤️ by GrabIt
 # insta-downloader
