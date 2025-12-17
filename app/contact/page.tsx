@@ -1,12 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, Mail } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { ArrowLeft, Mail, Loader2, Send } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 
 export default function ContactPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -14,11 +14,38 @@ export default function ContactPage() {
     message: ''
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Handle form submission - you can integrate with your backend or email service
-    alert('Thank you for your message! We will get back to you soon.')
-    setFormData({ name: '', email: '', subject: '', message: '' })
+    setIsSubmitting(true)
+
+    try {
+      const form = new FormData()
+      form.append("access_key", "ac79758c-6137-4a96-aed7-d26d3a16e1f3")
+      form.append("name", formData.name)
+      form.append("email", formData.email)
+      form.append("subject", formData.subject)
+      form.append("message", formData.message)
+      form.append("from_name", "grabit2me Contact Form")
+
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: form,
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        toast.success("Thank you for reaching out! We'll get back to you soon.")
+        setFormData({ name: '', email: '', subject: '', message: '' })
+      } else {
+        throw new Error(data.message || "Form submission failed")
+      }
+    } catch (error) {
+      toast.error("Something went wrong. Please try again later.")
+      console.error("Form submission error:", error)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -51,68 +78,98 @@ export default function ContactPage() {
                 </div>
               </div>
 
-              <div className="rounded-2xl border bg-muted/50 p-6 space-y-3">
-                <h3 className="font-semibold">Before contacting us:</h3>
-                <ul className="text-sm text-muted-foreground space-y-2">
-                  <li>• Check our <Link href="/faq" className="text-foreground underline">FAQ page</Link> for quick answers</li>
-                  <li>• Review our <Link href="/terms" className="text-foreground underline">Terms of Service</Link></li>
-                  <li>• Read our <Link href="/privacy" className="text-foreground underline">Privacy Policy</Link></li>
+              <div className="bg-[#ffd93d] border-3 border-[#1a1a1a] p-6 space-y-3" style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}>
+                <h3 className="font-bold">Before contacting us:</h3>
+                <ul className="text-sm font-medium space-y-2">
+                  <li>• Check our <Link href="/faq" className="underline font-bold hover:text-[#ff6b9d]">FAQ page</Link> for quick answers</li>
+                  <li>• Review our <Link href="/terms" className="underline font-bold hover:text-[#ff6b9d]">Terms of Service</Link></li>
+                  <li>• Read our <Link href="/privacy" className="underline font-bold hover:text-[#ff6b9d]">Privacy Policy</Link></li>
                 </ul>
               </div>
             </div>
 
-            <div className="rounded-2xl border bg-card p-6">
+            <div className="bg-white border-3 border-[#1a1a1a] p-6" style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}>
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="name" className="text-sm font-medium">Name</label>
-                  <Input
+                  <label htmlFor="name" className="text-sm font-bold">Name</label>
+                  <input
                     id="name"
+                    name="name"
                     placeholder="Your name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
+                    disabled={isSubmitting}
+                    className="w-full h-12 px-4 text-base font-medium bg-white border-3 border-[#1a1a1a] focus:outline-none focus:border-[#ff6b9d] transition-all disabled:opacity-50"
+                    style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="email" className="text-sm font-medium">Email</label>
-                  <Input
+                  <label htmlFor="email" className="text-sm font-bold">Email</label>
+                  <input
                     id="email"
+                    name="email"
                     type="email"
                     placeholder="your@email.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
+                    disabled={isSubmitting}
+                    className="w-full h-12 px-4 text-base font-medium bg-white border-3 border-[#1a1a1a] focus:outline-none focus:border-[#ff6b9d] transition-all disabled:opacity-50"
+                    style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="subject" className="text-sm font-medium">Subject</label>
-                  <Input
+                  <label htmlFor="subject" className="text-sm font-bold">Subject</label>
+                  <input
                     id="subject"
+                    name="subject"
                     placeholder="What's this about?"
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     required
+                    disabled={isSubmitting}
+                    className="w-full h-12 px-4 text-base font-medium bg-white border-3 border-[#1a1a1a] focus:outline-none focus:border-[#ff6b9d] transition-all disabled:opacity-50"
+                    style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="message" className="text-sm font-medium">Message</label>
+                  <label htmlFor="message" className="text-sm font-bold">Message</label>
                   <textarea
                     id="message"
+                    name="message"
                     placeholder="Your message..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                     required
+                    disabled={isSubmitting}
                     rows={6}
-                    className="flex w-full rounded-2xl border border-input bg-background px-4 py-3 text-base shadow-sm transition-colors placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 resize-none"
+                    className="w-full px-4 py-3 text-base font-medium bg-white border-3 border-[#1a1a1a] focus:outline-none focus:border-[#ff6b9d] transition-all disabled:opacity-50 resize-none"
+                    style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }}
                   />
                 </div>
 
-                <Button type="submit" className="w-full" size="lg">
-                  Send Message
-                </Button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full h-14 bg-[#1a1a1a] text-white border-3 border-[#1a1a1a] font-bold text-base flex items-center justify-center gap-2 transition-all duration-150 hover:shadow-xl active:shadow-md disabled:opacity-50"
+                  style={{ boxShadow: '4px 4px 0px 0px #ff6b9d' }}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send className="h-5 w-5" />
+                      Send Message
+                    </>
+                  )}
+                </button>
               </form>
             </div>
           </div>
