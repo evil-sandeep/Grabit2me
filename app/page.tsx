@@ -13,6 +13,7 @@ interface MediaResponse {
   description?: string;
   isYouTube?: boolean;
   thumbnail?: string;
+  externalDownload?: boolean;
   availableFormats?: {
     video: Array<{
       quality: string;
@@ -20,6 +21,7 @@ interface MediaResponse {
       url: string;
       qualityNum: number;
       hasAudio?: boolean;
+      isExternal?: boolean;
     }>;
     audio: Array<{
       quality: string;
@@ -139,26 +141,49 @@ export default function Home() {
     }
   };
 
-  const handleDownload = async (customUrl?: string) => {
+  const handleDownload = async (customUrl?: string, isExternal?: boolean) => {
     if (!media) return;
 
     setDownloading(true);
+    setError('');
+    
     try {
       // Use custom URL if provided (for format selection), otherwise use default mediaUrl
       const urlToDownload = customUrl || media.mediaUrl;
       
-      // Fetch through the download proxy
+      // Handle external download links (like y2mate)
+      if (isExternal || (customUrl && customUrl.includes('y2mate.com'))) {
+        window.open(urlToDownload, '_blank');
+        setDownloading(false);
+        return;
+      }
+      
+      // For YouTube videos with googlevideo URLs, open in new tab for direct download
+      // YouTube URLs don't work well with proxy due to CORS and expiration
+      if (media.isYouTube && urlToDownload.includes('googlevideo.com')) {
+        window.open(urlToDownload, '_blank');
+        setDownloading(false);
+        return;
+      }
+      
+      // For other platforms, use the download proxy
       const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}`;
       
       // Fetch the blob data
       const response = await fetch(downloadUrl);
       
       if (!response.ok) {
-        throw new Error('Download failed');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Download failed');
       }
       
       // Get the blob
       const blob = await response.blob();
+      
+      // Check if blob is valid
+      if (blob.size === 0) {
+        throw new Error('Downloaded file is empty');
+      }
       
       // Create blob URL and trigger download
       const blobUrl = window.URL.createObjectURL(blob);
@@ -173,10 +198,10 @@ export default function Home() {
       window.URL.revokeObjectURL(blobUrl);
       
       setDownloading(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download failed:', error);
       setDownloading(false);
-      alert('Download failed. Please try again.');
+      setError(error.message || 'Download failed. Please try again.');
     }
   };
 
@@ -370,20 +395,29 @@ export default function Home() {
                   <div className="space-y-4">
                     <p className="font-bold text-lg flex items-center gap-2">
                       <Download className="h-5 w-5" />
-                      Select Quality
+                      {media.externalDownload ? 'Download Video' : 'Select Quality'}
                     </p>
+                    {media.externalDownload && (
+                      <p className="text-sm text-[#525252] bg-[#fef9c3] border-2 border-[#1a1a1a] p-3">
+                        💡 Click the button below to open the download page. Select your preferred quality there.
+                      </p>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {media.availableFormats.video.map((format, index) => (
                         <button
                           key={index}
-                          onClick={() => handleDownload(format.url)}
+                          onClick={() => handleDownload(format.url, format.isExternal)}
                           disabled={downloading}
-                          className="h-12 px-4 bg-[#98ee99] border-3 border-[#1a1a1a] font-bold text-sm retro-btn flex items-center gap-2"
+                          className={`h-12 px-4 ${format.isExternal ? 'bg-[#6bcfff]' : 'bg-[#98ee99]'} border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none`}
+                          style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
                         >
                           <Download className="h-4 w-4 shrink-0" />
                           <span className="truncate">{format.quality}</span>
-                          {format.hasAudio && (
+                          {format.hasAudio && !format.isExternal && (
                             <span className="ml-auto text-xs bg-[#1a1a1a] text-white px-2 py-0.5">🔊</span>
+                          )}
+                          {format.isExternal && (
+                            <span className="ml-auto text-xs">↗</span>
                           )}
                         </button>
                       ))}
@@ -399,7 +433,8 @@ export default function Home() {
                               key={index}
                               onClick={() => handleDownload(format.url)}
                               disabled={downloading}
-                              className="h-12 px-4 bg-[#c084fc] border-3 border-[#1a1a1a] font-bold text-sm retro-btn flex items-center gap-2"
+                              className="h-12 px-4 bg-[#c084fc] border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                              style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
                             >
                               <Download className="h-4 w-4 shrink-0" />
                               <span className="truncate">{format.quality}</span>
@@ -413,7 +448,8 @@ export default function Home() {
                   <button
                     onClick={() => handleDownload()}
                     disabled={downloading}
-                    className="w-full h-14 bg-[#98ee99] border-3 border-[#1a1a1a] font-bold text-lg retro-btn flex items-center justify-center gap-2"
+                    className="w-full h-14 bg-[#98ee99] border-3 border-[#1a1a1a] font-bold text-lg flex items-center justify-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                    style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}
                   >
                     {downloading ? (
                       <>

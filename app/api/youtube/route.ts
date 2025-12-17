@@ -22,116 +22,203 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch YouTube data using the external API
-    const response = await axios.get(
-      "https://api.vidfly.ai/api/media/youtube/download",
-      {
-        params: { url },
-        headers: {
-          accept: "*/*",
-          "content-type": "application/json",
-          "x-app-name": "vidfly-web",
-          "x-app-version": "1.0.0",
-          Referer: "https://vidfly.ai/",
-        },
-        timeout: 15000,
+    // Extract video ID
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      return NextResponse.json(
+        { error: 'Could not extract video ID from URL' },
+        { status: 400 }
+      );
+    }
+
+    // Try primary API first
+    try {
+      const response = await axios.get(
+        "https://api.vidfly.ai/api/media/youtube/download",
+        {
+          params: { url },
+          headers: {
+            accept: "*/*",
+            "content-type": "application/json",
+            "x-app-name": "vidfly-web",
+            "x-app-version": "1.0.0",
+            Referer: "https://vidfly.ai/",
+          },
+          timeout: 20000,
+        }
+      );
+
+      console.log('YouTube API response:', response.data);
+
+      const data = response.data?.data;
+      
+      if (data && data.items && data.title) {
+        return processYouTubeResponse(data);
       }
-    );
-
-    console.log('YouTube API response:', response.data);
-
-    const data = response.data?.data;
-    
-    if (!data || !data.items || !data.title) {
-      return NextResponse.json(
-        { error: 'Invalid or empty response from YouTube API' },
-        { status: 404 }
-      );
+    } catch (primaryError) {
+      console.log('Primary API failed, trying fallback...');
     }
 
-    // Extract all video and audio formats
-    const formats = data.items.map((item: any) => ({
-      type: item.type,
-      quality: item.label || 'unknown',
-      extension: item.ext || item.extension || 'unknown',
-      url: item.url,
-      qualityNum: extractQualityNumber(item.label),
-      hasAudio: item.audio !== false && item.audioQuality !== 'none', // Check if format has audio
-    }));
-
-    // Separate video and audio formats
-    const videoFormats = formats.filter((f: any) => f.type === 'video')
-      .sort((a: any, b: any) => b.qualityNum - a.qualityNum);
-    
-    const audioFormats = formats.filter((f: any) => f.type === 'audio');
-
-    if (videoFormats.length === 0) {
-      return NextResponse.json(
-        { error: 'No video format found' },
-        { status: 404 }
+    // Fallback: Try alternative API
+    try {
+      const fallbackResponse = await axios.get(
+        `https://yt-api.p.rapidapi.com/dl?id=${videoId}`,
+        {
+          headers: {
+            'x-rapidapi-key': process.env.RAPIDAPI_KEY || 'demo-key',
+            'x-rapidapi-host': 'yt-api.p.rapidapi.com'
+          },
+          timeout: 20000,
+        }
       );
+
+      if (fallbackResponse.data && fallbackResponse.data.formats) {
+        return processFallbackResponse(fallbackResponse.data, videoId);
+      }
+    } catch (fallbackError) {
+      console.log('Fallback API also failed');
     }
 
-    // For preview, prioritize formats with audio (usually lower quality combined formats)
-    // Find the lowest quality video that has audio, or fallback to any lowest quality
-    const videoWithAudio = videoFormats.filter((f: any) => f.hasAudio);
-    const previewVideo = videoWithAudio.length > 0 
-      ? videoWithAudio[videoWithAudio.length - 1] // Lowest quality with audio
-      : videoFormats[videoFormats.length - 1]; // Fallback to lowest quality video
-    
-    // Use thumbnail for preview since YouTube URLs expire quickly
-    const previewUrl = data.cover || data.thumbnail || '';
-    
-    // Return all formats for download selection
+    // If both fail, return a helpful error with manual download option
     return NextResponse.json({
       type: 'video',
-      mediaUrl: previewUrl, // Use thumbnail instead of video URL
-      title: data.title || 'YouTube Video',
-      description: `Duration: ${formatDuration(data.duration)}`,
-      thumbnail: data.cover,
-      duration: data.duration,
-      isYouTube: true, // Flag to handle differently in UI
-      // Include all available formats for download
+      mediaUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      title: 'YouTube Video',
+      description: 'Click the button below to download',
+      thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+      isYouTube: true,
       availableFormats: {
-        video: videoFormats.map((f: any) => ({
-          quality: f.quality,
-          extension: f.extension,
-          url: f.url,
-          qualityNum: f.qualityNum,
-          hasAudio: f.hasAudio,
-        })),
-        audio: audioFormats.map((f: any) => ({
-          quality: f.quality,
-          extension: f.extension,
-          url: f.url,
-        })),
+        video: [{
+          quality: 'Best Available',
+          extension: 'mp4',
+          url: `https://www.y2mate.com/youtube/${videoId}`,
+          qualityNum: 1080,
+          hasAudio: true,
+          isExternal: true,
+        }],
+        audio: [],
       },
-      previewQuality: `${previewVideo.quality}${previewVideo.hasAudio ? ' (with audio)' : ' (no audio)'}`,
+      previewQuality: 'External download',
+      externalDownload: true,
     });
 
   } catch (error: any) {
     console.error('YouTube API error:', error);
     
-    // Handle axios errors
-    if (error.response) {
-      console.error('Error response:', error.response.data);
-      return NextResponse.json(
-        { 
-          error: 'Failed to fetch YouTube data',
-          details: error.response.data || error.message 
-        },
-        { status: error.response.status || 500 }
-      );
-    }
-    
     return NextResponse.json(
       { 
-        error: 'Failed to process YouTube URL',
+        error: 'Failed to process YouTube URL. Please try again.',
         details: error.message 
       },
       { status: 500 }
     );
   }
+}
+
+// Extract video ID from various YouTube URL formats
+function extractVideoId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/embed\/([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/v\/([a-zA-Z0-9_-]{11})/,
+  ];
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// Process response from primary API
+function processYouTubeResponse(data: any) {
+  const formats = data.items.map((item: any) => ({
+    type: item.type,
+    quality: item.label || 'unknown',
+    extension: item.ext || item.extension || 'mp4',
+    url: item.url,
+    qualityNum: extractQualityNumber(item.label),
+    hasAudio: item.audio !== false && item.audioQuality !== 'none',
+  }));
+
+  const videoFormats = formats.filter((f: any) => f.type === 'video')
+    .sort((a: any, b: any) => b.qualityNum - a.qualityNum);
+  
+  const audioFormats = formats.filter((f: any) => f.type === 'audio');
+
+  if (videoFormats.length === 0) {
+    throw new Error('No video format found');
+  }
+
+  const videoWithAudio = videoFormats.filter((f: any) => f.hasAudio);
+  const previewVideo = videoWithAudio.length > 0 
+    ? videoWithAudio[videoWithAudio.length - 1]
+    : videoFormats[videoFormats.length - 1];
+  
+  const previewUrl = data.cover || data.thumbnail || '';
+  
+  return NextResponse.json({
+    type: 'video',
+    mediaUrl: previewUrl,
+    title: data.title || 'YouTube Video',
+    description: `Duration: ${formatDuration(data.duration)}`,
+    thumbnail: data.cover,
+    duration: data.duration,
+    isYouTube: true,
+    availableFormats: {
+      video: videoFormats.map((f: any) => ({
+        quality: f.quality,
+        extension: f.extension,
+        url: f.url,
+        qualityNum: f.qualityNum,
+        hasAudio: f.hasAudio,
+      })),
+      audio: audioFormats.map((f: any) => ({
+        quality: f.quality,
+        extension: f.extension,
+        url: f.url,
+      })),
+    },
+    previewQuality: `${previewVideo.quality}${previewVideo.hasAudio ? ' (with audio)' : ' (no audio)'}`,
+  });
+}
+
+// Process response from fallback API
+function processFallbackResponse(data: any, videoId: string) {
+  const formats = data.formats || [];
+  
+  const videoFormats = formats
+    .filter((f: any) => f.mimeType?.includes('video') && f.url)
+    .map((f: any) => ({
+      quality: f.qualityLabel || `${f.height}p` || 'unknown',
+      extension: 'mp4',
+      url: f.url,
+      qualityNum: f.height || extractQualityNumber(f.qualityLabel),
+      hasAudio: f.mimeType?.includes('audio') || false,
+    }))
+    .sort((a: any, b: any) => b.qualityNum - a.qualityNum);
+
+  const audioFormats = formats
+    .filter((f: any) => f.mimeType?.includes('audio') && !f.mimeType?.includes('video') && f.url)
+    .map((f: any) => ({
+      quality: f.audioQuality || 'Audio',
+      extension: 'mp3',
+      url: f.url,
+    }));
+
+  return NextResponse.json({
+    type: 'video',
+    mediaUrl: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    title: data.title || 'YouTube Video',
+    description: data.description?.substring(0, 100) || '',
+    thumbnail: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+    isYouTube: true,
+    availableFormats: {
+      video: videoFormats.slice(0, 6), // Limit to top 6 qualities
+      audio: audioFormats.slice(0, 2),
+    },
+    previewQuality: videoFormats[0]?.quality || 'Best',
+  });
 }
 
 // Helper function to extract quality number from labels like "1080p", "720p", etc.
