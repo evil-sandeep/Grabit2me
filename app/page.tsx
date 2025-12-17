@@ -38,6 +38,8 @@ export default function Home() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [downloadingFormat, setDownloadingFormat] = useState<string | null>(null);
+  const [downloadStatus, setDownloadStatus] = useState<'idle' | 'fetching' | 'starting'>('idle');
   const [media, setMedia] = useState<MediaResponse | null>(null);
   const [error, setError] = useState('');
   const [selectedFormat, setSelectedFormat] = useState<string>(''); // For format selection
@@ -141,10 +143,13 @@ export default function Home() {
     }
   };
 
-  const handleDownload = async (customUrl?: string, isExternal?: boolean) => {
+  const handleDownload = async (customUrl?: string, isExternal?: boolean, formatId?: string) => {
     if (!media) return;
 
+    const downloadId = formatId || customUrl || 'default';
     setDownloading(true);
+    setDownloadingFormat(downloadId);
+    setDownloadStatus('fetching');
     setError('');
     
     try {
@@ -155,52 +160,59 @@ export default function Home() {
       if (isExternal || (customUrl && customUrl.includes('y2mate.com'))) {
         window.open(urlToDownload, '_blank');
         setDownloading(false);
+        setDownloadingFormat(null);
+        setDownloadStatus('idle');
         return;
       }
       
-      // For YouTube videos with googlevideo URLs, open in new tab for direct download
-      // YouTube URLs don't work well with proxy due to CORS and expiration
+      // For YouTube videos - trigger download immediately via anchor tag
+      // This lets the browser handle the download natively without waiting
       if (media.isYouTube && urlToDownload.includes('googlevideo.com')) {
-        window.open(urlToDownload, '_blank');
-        setDownloading(false);
+        const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}&platform=youtube`;
+        
+        // Create hidden anchor and trigger immediate download
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = `grabit-youtube-${Date.now()}.mp4`;
+        link.style.display = 'none';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        // Show "Starting..." briefly then reset
+        setDownloadStatus('starting');
+        setTimeout(() => {
+          setDownloading(false);
+          setDownloadingFormat(null);
+          setDownloadStatus('idle');
+        }, 800);
         return;
       }
       
-      // For other platforms, use the download proxy
+      // For other platforms - also use direct download
       const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}`;
       
-      // Fetch the blob data
-      const response = await fetch(downloadUrl);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Download failed');
-      }
-      
-      // Get the blob
-      const blob = await response.blob();
-      
-      // Check if blob is valid
-      if (blob.size === 0) {
-        throw new Error('Downloaded file is empty');
-      }
-      
-      // Create blob URL and trigger download
-      const blobUrl = window.URL.createObjectURL(blob);
+      // Create hidden anchor and trigger immediate download
       const link = document.createElement('a');
-      link.href = blobUrl;
+      link.href = downloadUrl;
       link.download = `grabit-${media.type}-${Date.now()}.${media.type === 'video' ? 'mp4' : 'jpg'}`;
+      link.style.display = 'none';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       
-      // Clean up blob URL
-      window.URL.revokeObjectURL(blobUrl);
-      
-      setDownloading(false);
+      // Show "Starting..." briefly then reset
+      setDownloadStatus('starting');
+      setTimeout(() => {
+        setDownloading(false);
+        setDownloadingFormat(null);
+        setDownloadStatus('idle');
+      }, 800);
     } catch (error: any) {
       console.error('Download failed:', error);
       setDownloading(false);
+      setDownloadingFormat(null);
+      setDownloadStatus('idle');
       setError(error.message || 'Download failed. Please try again.');
     }
   };
@@ -275,7 +287,7 @@ export default function Home() {
                 {(url || media) && (
                   <button
                     onClick={handleReset}
-                    className="w-full sm:w-auto h-12 sm:h-14 px-6 bg-[#ffd93d] border-3 border-[#1a1a1a] font-bold transition-all duration-150 hover:shadow-md active:shadow-sm text-base sm:text-lg"
+                    className="w-full sm:w-auto h-12 sm:h-14 px-6 bg-[#ffd93d] border-3 border-[#1a1a1a] font-bold transition-all duration-150 hover:shadow-md active:shadow-sm text-base sm:text-lg cursor-pointer"
                     style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
                     title="Clear"
                   >
@@ -289,7 +301,7 @@ export default function Home() {
                 <button
                   onClick={handleFetchMedia}
                   disabled={loading}
-                  className="w-full h-14 sm:h-16 bg-[#1a1a1a] text-white border-3 border-[#1a1a1a] font-bold text-base sm:text-lg flex items-center justify-center gap-2 transition-all duration-150 hover:shadow-xl active:shadow-md"
+                  className="w-full h-14 sm:h-16 bg-[#1a1a1a] text-white border-3 border-[#1a1a1a] font-bold text-base sm:text-lg flex items-center justify-center gap-2 transition-all duration-150 hover:shadow-xl active:shadow-md cursor-pointer"
                   style={{ boxShadow: '5px 5px 0px 0px #ff6b9d' }}
                 >
                   {loading ? (
@@ -402,25 +414,49 @@ export default function Home() {
                         💡 Click the button below to open the download page. Select your preferred quality there.
                       </p>
                     )}
+                    {media.isYouTube && !media.externalDownload && (
+                      <p className="text-xs text-[#525252] bg-[#e8f5e9] border-2 border-[#1a1a1a] p-2 flex items-center gap-2">
+                        <span className="bg-[#98ee99] px-1.5 py-0.5 text-[10px] font-bold border border-[#1a1a1a]">🔊 Green</span> = with sound
+                        <span className="bg-[#ffd93d] px-1.5 py-0.5 text-[10px] font-bold border border-[#1a1a1a]">🔇 Yellow</span> = no sound
+                      </p>
+                    )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {media.availableFormats.video.map((format, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleDownload(format.url, format.isExternal)}
-                          disabled={downloading}
-                          className={`h-12 px-4 ${format.isExternal ? 'bg-[#6bcfff]' : 'bg-[#98ee99]'} border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none`}
-                          style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
-                        >
-                          <Download className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{format.quality}</span>
-                          {format.hasAudio && !format.isExternal && (
-                            <span className="ml-auto text-xs bg-[#1a1a1a] text-white px-2 py-0.5">🔊</span>
-                          )}
-                          {format.isExternal && (
-                            <span className="ml-auto text-xs">↗</span>
-                          )}
-                        </button>
-                      ))}
+                      {media.availableFormats.video.map((format, index) => {
+                        const formatId = `video-${index}-${format.quality}`;
+                        const isThisDownloading = downloadingFormat === formatId;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleDownload(format.url, format.isExternal, formatId)}
+                            disabled={downloading}
+                            className={`h-12 px-4 ${format.isExternal ? 'bg-[#6bcfff]' : format.hasAudio ? 'bg-[#98ee99]' : 'bg-[#ffd93d]'} border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer disabled:opacity-70 disabled:cursor-wait`}
+                            style={{ boxShadow: isThisDownloading ? 'none' : '3px 3px 0px 0px #1a1a1a', transform: isThisDownloading ? 'translate(2px, 2px)' : undefined }}
+                          >
+                            {isThisDownloading ? (
+                              <>
+                                <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                                <span className="truncate">
+                                  {downloadStatus === 'starting' ? 'Starting...' : 'Downloading...'}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <Download className="h-4 w-4 shrink-0" />
+                                <span className="truncate">{format.quality}</span>
+                                {format.hasAudio && !format.isExternal && (
+                                  <span className="ml-auto text-xs bg-[#1a1a1a] text-white px-2 py-0.5 rounded">🔊</span>
+                                )}
+                                {!format.hasAudio && !format.isExternal && (
+                                  <span className="ml-auto text-xs bg-[#ef4444] text-white px-2 py-0.5 rounded">🔇</span>
+                                )}
+                                {format.isExternal && (
+                                  <span className="ml-auto text-xs">↗</span>
+                                )}
+                              </>
+                            )}
+                          </button>
+                        );
+                      })}
                     </div>
 
                     {/* Audio Options */}
@@ -428,18 +464,33 @@ export default function Home() {
                       <div className="space-y-3 pt-4 border-t-3 border-[#1a1a1a]">
                         <p className="font-bold">Audio Only</p>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {media.availableFormats.audio.map((format, index) => (
-                            <button
-                              key={index}
-                              onClick={() => handleDownload(format.url)}
-                              disabled={downloading}
-                              className="h-12 px-4 bg-[#c084fc] border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
-                              style={{ boxShadow: '3px 3px 0px 0px #1a1a1a' }}
-                            >
-                              <Download className="h-4 w-4 shrink-0" />
-                              <span className="truncate">{format.quality}</span>
-                            </button>
-                          ))}
+                          {media.availableFormats.audio.map((format, index) => {
+                            const formatId = `audio-${index}-${format.quality}`;
+                            const isThisDownloading = downloadingFormat === formatId;
+                            return (
+                              <button
+                                key={index}
+                                onClick={() => handleDownload(format.url, false, formatId)}
+                                disabled={downloading}
+                                className="h-12 px-4 bg-[#c084fc] border-3 border-[#1a1a1a] font-bold text-sm flex items-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer disabled:opacity-70 disabled:cursor-wait"
+                                style={{ boxShadow: isThisDownloading ? 'none' : '3px 3px 0px 0px #1a1a1a', transform: isThisDownloading ? 'translate(2px, 2px)' : undefined }}
+                              >
+                                {isThisDownloading ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                                    <span className="truncate">
+                                      {downloadStatus === 'starting' ? 'Starting...' : 'Downloading...'}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Download className="h-4 w-4 shrink-0" />
+                                    <span className="truncate">{format.quality}</span>
+                                  </>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -448,13 +499,13 @@ export default function Home() {
                   <button
                     onClick={() => handleDownload()}
                     disabled={downloading}
-                    className="w-full h-14 bg-[#98ee99] border-3 border-[#1a1a1a] font-bold text-lg flex items-center justify-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none"
+                    className="w-full h-14 bg-[#98ee99] border-3 border-[#1a1a1a] font-bold text-lg flex items-center justify-center gap-2 transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-none cursor-pointer"
                     style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}
                   >
                     {downloading ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin" />
-                        Downloading...
+                        {downloadStatus === 'starting' ? 'Starting...' : 'Downloading...'}
                       </>
                     ) : (
                       <>

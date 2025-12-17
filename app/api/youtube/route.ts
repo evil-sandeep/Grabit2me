@@ -48,9 +48,16 @@ export async function POST(request: NextRequest) {
         }
       );
 
-      console.log('YouTube API response:', response.data);
-
+      console.log('YouTube API response:', JSON.stringify(response.data, null, 2));
+      
+      // Log individual items to understand audio fields
       const data = response.data?.data;
+      if (data?.items) {
+        console.log('Sample item structure:', JSON.stringify(data.items[0], null, 2));
+        data.items.forEach((item: any, i: number) => {
+          console.log(`Item ${i}: type=${item.type}, label=${item.label}, audio=${item.audio}, hasAudio=${item.hasAudio}, audioQuality=${item.audioQuality}`);
+        });
+      }
       
       if (data && data.items && data.title) {
         return processYouTubeResponse(data);
@@ -132,28 +139,56 @@ function extractVideoId(url: string): string | null {
 
 // Process response from primary API
 function processYouTubeResponse(data: any) {
-  const formats = data.items.map((item: any) => ({
-    type: item.type,
-    quality: item.label || 'unknown',
-    extension: item.ext || item.extension || 'mp4',
-    url: item.url,
-    qualityNum: extractQualityNumber(item.label),
-    hasAudio: item.audio !== false && item.audioQuality !== 'none',
-  }));
+  const formats = data.items.map((item: any) => {
+    // Check if type indicates audio - "video_with_audio" means it has audio!
+    const hasAudio = item.type === 'video_with_audio' || 
+                     item.type === 'audio' ||
+                     item.audio === true || 
+                     item.hasAudio === true;
+    
+    // Normalize type for filtering
+    const isVideo = item.type === 'video' || item.type === 'video_with_audio';
+    const isAudio = item.type === 'audio';
+    
+    return {
+      type: isVideo ? 'video' : (isAudio ? 'audio' : item.type),
+      originalType: item.type,
+      quality: item.label || 'unknown',
+      extension: item.ext || item.extension || 'mp4',
+      url: item.url,
+      qualityNum: extractQualityNumber(item.label),
+      hasAudio: hasAudio,
+    };
+  });
 
-  const videoFormats = formats.filter((f: any) => f.type === 'video')
-    .sort((a: any, b: any) => b.qualityNum - a.qualityNum);
+  // Get video formats - ONLY MP4, no webm
+  const videoFormats = formats.filter((f: any) => 
+    f.type === 'video' && f.extension === 'mp4'
+  );
   
-  const audioFormats = formats.filter((f: any) => f.type === 'audio');
+  // Sort: first by hasAudio (true first), then by quality (high to low)
+  const sortedVideoFormats = videoFormats.sort((a: any, b: any) => {
+    // Prioritize formats with audio
+    if (a.hasAudio && !b.hasAudio) return -1;
+    if (!a.hasAudio && b.hasAudio) return 1;
+    // Then sort by quality
+    return b.qualityNum - a.qualityNum;
+  });
+  
+  // Get audio formats - only m4a (filter out opus/webm)
+  const audioFormats = formats.filter((f: any) => 
+    f.type === 'audio' && (f.extension === 'm4a' || f.extension === 'mp3')
+  );
 
-  if (videoFormats.length === 0) {
+  if (sortedVideoFormats.length === 0) {
     throw new Error('No video format found');
   }
 
-  const videoWithAudio = videoFormats.filter((f: any) => f.hasAudio);
+  // Find best format with audio for preview
+  const videoWithAudio = sortedVideoFormats.filter((f: any) => f.hasAudio);
   const previewVideo = videoWithAudio.length > 0 
-    ? videoWithAudio[videoWithAudio.length - 1]
-    : videoFormats[videoFormats.length - 1];
+    ? videoWithAudio[0] // Best quality with audio
+    : sortedVideoFormats[0];
   
   const previewUrl = data.cover || data.thumbnail || '';
   
@@ -166,7 +201,8 @@ function processYouTubeResponse(data: any) {
     duration: data.duration,
     isYouTube: true,
     availableFormats: {
-      video: videoFormats.map((f: any) => ({
+      // Show ALL MP4 formats (with and without audio)
+      video: sortedVideoFormats.map((f: any) => ({
         quality: f.quality,
         extension: f.extension,
         url: f.url,
@@ -179,7 +215,7 @@ function processYouTubeResponse(data: any) {
         url: f.url,
       })),
     },
-    previewQuality: `${previewVideo.quality}${previewVideo.hasAudio ? ' (with audio)' : ' (no audio)'}`,
+    previewQuality: `${previewVideo.quality}${previewVideo.hasAudio ? '' : ' (no audio)'}`,
   });
 }
 
