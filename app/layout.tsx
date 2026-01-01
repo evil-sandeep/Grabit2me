@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import PWARegister from "@/components/PWARegister";
 import { HeroHeader } from "@/components/section/Header";
 import { Footer } from "@/components/section/Footer";
 import { Analytics } from "@vercel/analytics/next"
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  display: 'swap',
-});
 
 export const viewport = {
   width: "device-width",
@@ -157,7 +150,7 @@ export default function RootLayout({
         <link rel="apple-touch-startup-image" href="/ios-tinted.png" />
       </head>
       <body
-        className={`${inter.variable} font-sans antialiased`}
+        className="font-sans antialiased"
       >
         <HeroHeader />
         <PWARegister />
