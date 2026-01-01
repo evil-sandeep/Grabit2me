@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
-import * as cheerio from 'cheerio';
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,170 +22,145 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert x.com to twitter.com for API compatibility
-    const twitterUrl = url.replace('x.com', 'twitter.com');
-
-    // Try multiple methods to extract media
-
-    // Method 1: Using Twitter's syndication API (Guest token approach)
-    try {
-      const tweetId = twitterUrl.match(/status\/(\d+)/)?.[1];
-      if (!tweetId) {
-        throw new Error('Could not extract tweet ID');
-      }
-
-      // First, get a guest token
-      let guestToken;
-      try {
-        const tokenResponse = await axios.post(
-          'https://api.twitter.com/1.1/guest/activate.json',
-          {},
-          {
-            headers: {
-              'Authorization': 'Bearer AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA',
-            },
-          }
-        );
-        guestToken = tokenResponse.data.guest_token;
-      } catch (err) {
-        // If guest token fails, try without it
-        console.log('Guest token failed, trying alternative methods');
-      }
-
-      // Try syndication endpoint first (works for public tweets)
-      const syndicationUrl = `https://cdn.syndication.twimg.com/tweet-result?id=${tweetId}&lang=en`;
-      const syndicationResponse = await axios.get(syndicationUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        },
-        timeout: 10000,
-      });
-
-      const tweetData = syndicationResponse.data;
-
-      // Extract media from syndication response
-      if (tweetData && tweetData.mediaDetails && tweetData.mediaDetails.length > 0) {
-        const media = tweetData.mediaDetails[0];
-        
-        if (media.type === 'video' || media.type === 'animated_gif') {
-          // Get the highest quality video variant
-          const variants = media.video_info?.variants || [];
-          const mp4Variants = variants.filter((v: any) => v.content_type === 'video/mp4');
-          
-          if (mp4Variants.length > 0) {
-            // Sort by bitrate to get highest quality
-            mp4Variants.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
-            const videoUrl = mp4Variants[0].url;
-            
-            return NextResponse.json({
-              type: 'video',
-              mediaUrl: videoUrl,
-              title: tweetData.text || 'Twitter Video',
-              description: tweetData.user?.name || 'Twitter User',
-            });
-          }
-        } else if (media.type === 'photo') {
-          const imageUrl = media.media_url_https || media.media_url;
-          
-          return NextResponse.json({
-            type: 'image',
-            mediaUrl: imageUrl,
-            title: tweetData.text || 'Twitter Image',
-            description: tweetData.user?.name || 'Twitter User',
-          });
-        }
-      }
-    } catch (syndicationError) {
-      console.error('Syndication method failed:', syndicationError);
+    // Extract tweet ID
+    const tweetId = url.match(/status\/(\d+)/)?.[1];
+    if (!tweetId) {
+      return NextResponse.json(
+        { error: 'Could not extract tweet ID from URL' },
+        { status: 400 }
+      );
     }
 
-    // Method 2: Scrape the page directly
+    // Method 1: Try fxtwitter (most reliable)
     try {
-      const response = await axios.get(twitterUrl, {
+      // fxtwitter provides direct access to Twitter media
+      const fxUrl = `https://api.fxtwitter.com/status/${tweetId}`;
+      const fxResponse = await axios.get(fxUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'DNT': '1',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
         },
         timeout: 15000,
       });
 
-      const $ = cheerio.load(response.data);
+      const tweetData = fxResponse.data?.tweet;
       
-      // Try to extract video from meta tags
-      const videoMetaTags = [
-        'meta[property="og:video"]',
-        'meta[property="og:video:url"]',
-        'meta[property="twitter:player:stream"]',
-        'meta[name="twitter:player:stream"]',
-      ];
-
-      for (const selector of videoMetaTags) {
-        const videoUrl = $(selector).attr('content');
-        if (videoUrl && videoUrl.includes('.mp4')) {
+      if (tweetData) {
+        // Check for video
+        if (tweetData.media?.videos && tweetData.media.videos.length > 0) {
+          const videos = tweetData.media.videos;
+          // Get the highest quality video
+          const highestQuality = videos.reduce((prev: any, current: any) => 
+            (current.width > prev.width) ? current : prev
+          );
+          
           return NextResponse.json({
             type: 'video',
-            mediaUrl: videoUrl,
-            title: $('meta[property="og:title"]').attr('content') || 'Twitter Video',
-            description: $('meta[property="og:description"]').attr('content') || '',
+            mediaUrl: highestQuality.url,
+            title: tweetData.text || 'Twitter Video',
+            description: tweetData.author?.name || 'Twitter User',
+            thumbnail: tweetData.media?.videos[0]?.thumbnail_url || null,
           });
         }
-      }
-
-      // Try to extract image
-      const imageMetaTags = [
-        'meta[property="og:image"]',
-        'meta[name="twitter:image"]',
-        'meta[property="twitter:image"]',
-      ];
-
-      for (const selector of imageMetaTags) {
-        const imageUrl = $(selector).attr('content');
-        if (imageUrl && !imageUrl.includes('profile_images')) {
+        
+        // Check for photos
+        if (tweetData.media?.photos && tweetData.media.photos.length > 0) {
           return NextResponse.json({
             type: 'image',
-            mediaUrl: imageUrl,
-            title: $('meta[property="og:title"]').attr('content') || 'Twitter Image',
-            description: $('meta[property="og:description"]').attr('content') || '',
+            mediaUrl: tweetData.media.photos[0].url,
+            title: tweetData.text || 'Twitter Image',
+            description: tweetData.author?.name || 'Twitter User',
+          });
+        }
+
+        // Check for GIF
+        if (tweetData.media?.all && tweetData.media.all.length > 0) {
+          const gifMedia = tweetData.media.all.find((m: any) => m.type === 'gif' || m.type === 'video');
+          if (gifMedia) {
+            return NextResponse.json({
+              type: 'video',
+              mediaUrl: gifMedia.url,
+              title: tweetData.text || 'Twitter Media',
+              description: tweetData.author?.name || 'Twitter User',
+            });
+          }
+        }
+      }
+    } catch (fxError) {
+      console.error('FxTwitter method failed:', fxError);
+    }
+
+    // Method 2: Try fixupx as fallback
+    try {
+      const fixupxUrl = url.replace(/https?:\/\/(www\.)?(twitter\.com|x\.com)/, 'https://api.fixupx.com');
+      const fixupxResponse = await axios.get(fixupxUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        },
+        timeout: 15000,
+      });
+
+      const fixupxData = fixupxResponse.data;
+      
+      if (fixupxData?.tweet) {
+        const tweet = fixupxData.tweet;
+        
+        // Check for video
+        if (tweet.media?.videos && tweet.media.videos.length > 0) {
+          const video = tweet.media.videos[0];
+          return NextResponse.json({
+            type: 'video',
+            mediaUrl: video.url,
+            title: tweet.text || 'Twitter Video',
+            description: tweet.author?.name || 'Twitter User',
+          });
+        }
+        
+        // Check for image
+        if (tweet.media?.photos && tweet.media.photos.length > 0) {
+          return NextResponse.json({
+            type: 'image',
+            mediaUrl: tweet.media.photos[0].url,
+            title: tweet.text || 'Twitter Image',
+            description: tweet.author?.name || 'Twitter User',
           });
         }
       }
-    } catch (scrapingError) {
-      console.error('Scraping method failed:', scrapingError);
+    } catch (fixupxError) {
+      console.error('Fixupx method failed:', fixupxError);
     }
 
-    // Method 3: Try using vxtwitter as a fallback
+    // Method 3: Try VxTwitter API as another fallback
     try {
-      const vxUrl = twitterUrl.replace('twitter.com', 'api.vxtwitter.com');
+      const vxUrl = url.replace(/https?:\/\/(www\.)?(twitter\.com|x\.com)/, 'https://api.vxtwitter.com');
       const vxResponse = await axios.get(vxUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         },
-        timeout: 10000,
+        timeout: 15000,
       });
 
       const vxData = vxResponse.data;
-      if (vxData && vxData.media_extended) {
-        const media = vxData.media_extended[0];
-        
-        if (media.type === 'video' || media.type === 'gif') {
-          return NextResponse.json({
-            type: 'video',
-            mediaUrl: media.url,
-            title: vxData.text || 'Twitter Video',
-            description: vxData.user_name || 'Twitter User',
-          });
-        } else if (media.type === 'image') {
-          return NextResponse.json({
-            type: 'image',
-            mediaUrl: media.url,
-            title: vxData.text || 'Twitter Image',
-            description: vxData.user_name || 'Twitter User',
-          });
+      
+      if (vxData) {
+        // Check for video in media_extended
+        if (vxData.media_extended && vxData.media_extended.length > 0) {
+          const media = vxData.media_extended[0];
+          
+          if (media.type === 'video' || media.type === 'gif') {
+            return NextResponse.json({
+              type: 'video',
+              mediaUrl: media.url,
+              title: vxData.text || 'Twitter Video',
+              description: vxData.user_name || 'Twitter User',
+            });
+          } else if (media.type === 'image') {
+            return NextResponse.json({
+              type: 'image',
+              mediaUrl: media.url,
+              title: vxData.text || 'Twitter Image',
+              description: vxData.user_name || 'Twitter User',
+            });
+          }
         }
       }
     } catch (vxError) {

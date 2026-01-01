@@ -33,6 +33,13 @@ export async function GET(request: NextRequest) {
       headers['Sec-Fetch-Mode'] = 'no-cors';
       headers['Sec-Fetch-Site'] = 'cross-site';
       headers['Range'] = 'bytes=0-'; // Important for YouTube
+    } else if (url.includes('twitter.com') || url.includes('twimg.com') || url.includes('video.twimg.com')) {
+      // Twitter-specific headers
+      headers['Referer'] = 'https://twitter.com/';
+      headers['Origin'] = 'https://twitter.com';
+      headers['Sec-Fetch-Dest'] = type === 'video' ? 'video' : 'image';
+      headers['Sec-Fetch-Mode'] = 'no-cors';
+      headers['Sec-Fetch-Site'] = 'cross-site';
     } else {
       headers['Referer'] = 'https://www.instagram.com/';
       headers['Origin'] = 'https://www.instagram.com';
