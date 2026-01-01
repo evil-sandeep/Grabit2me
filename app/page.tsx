@@ -352,13 +352,13 @@ export default function Home() {
           <div className="mx-auto max-w-2xl mb-8 sm:mb-12 space-y-4 sm:space-y-6">
             {/* Video/Image Preview */}
             <div className="bg-white border-2 sm:border-3 border-[#1a1a1a] overflow-hidden" style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}>
-              <div className="aspect-video bg-[#1a1a1a] flex items-center justify-center">
+              <div className="relative w-full bg-[#1a1a1a] flex items-center justify-center max-h-[70vh]">
                 {media.isYouTube ? (
-                  <div className="relative w-full h-full">
+                  <div className="relative w-full">
                     <img
                       src={media.mediaUrl || media.thumbnail}
                       alt={media.title || 'YouTube Video'}
-                      className="w-full h-full object-cover"
+                      className="w-full h-auto max-h-[70vh] object-contain"
                     />
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50">
                       <div className="text-center space-y-4">
@@ -375,7 +375,7 @@ export default function Home() {
                   <video
                     controls
                     controlsList="nodownload"
-                    className="w-full h-full object-contain"
+                    className="w-full h-auto max-h-[70vh] object-contain"
                     src={media.mediaUrl}
                     onError={() => setError('Failed to load video preview. You can still try downloading it.')}
                   >
@@ -385,7 +385,7 @@ export default function Home() {
                   <img
                     src={media.mediaUrl}
                     alt={media.title || 'Media'}
-                    className="w-full h-full object-contain"
+                    className="w-full h-auto max-h-[70vh] object-contain"
                     onError={() => setError('Failed to load image preview. You can still try downloading it.')}
                   />
                 )}
