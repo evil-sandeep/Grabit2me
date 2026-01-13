@@ -11,7 +11,6 @@ interface MediaResponse {
   mediaUrl: string;
   title?: string;
   description?: string;
-  isYouTube?: boolean;
   thumbnail?: string;
   externalDownload?: boolean;
   availableFormats?: {
@@ -32,7 +31,7 @@ interface MediaResponse {
   previewQuality?: string;
 }
 
-type Platform = 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'snapchat' | 'youtube' | 'unsupported';
+type Platform = 'instagram' | 'twitter' | 'threads' | 'linkedin' | 'snapchat' | 'unsupported';
 
 export default function Home() {
   const [url, setUrl] = useState('');
@@ -58,8 +57,6 @@ export default function Home() {
       return 'linkedin';
     } else if (urlLower.includes('snapchat.com')) {
       return 'snapchat';
-    } else if (urlLower.includes('youtube.com') || urlLower.includes('youtu.be')) {
-      return 'youtube';
     }
 
     return 'unsupported';
@@ -90,7 +87,7 @@ export default function Home() {
     const platform = detectPlatform(url);
 
     if (platform === 'unsupported') {
-      setError('Platform not supported. Currently supported: Instagram, Twitter/X, Threads, LinkedIn, Snapchat, and YouTube');
+      setError('Platform not supported. Currently supported: Instagram, Twitter/X, Threads, LinkedIn, and Snapchat');
       return;
     }
 
@@ -107,9 +104,7 @@ export default function Home() {
             ? '/api/threads'
             : platform === 'linkedin'
               ? '/api/linkedin'
-              : platform === 'snapchat'
-                ? '/api/snapchat'
-                : '/api/youtube';
+              : '/api/snapchat';
 
       const response = await fetch(apiEndpoint, {
         method: 'POST',
@@ -165,31 +160,7 @@ export default function Home() {
         return;
       }
       
-      // For YouTube videos - trigger download immediately via anchor tag
-      // This lets the browser handle the download natively without waiting
-      if (media.isYouTube && urlToDownload.includes('googlevideo.com')) {
-        const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}&platform=youtube`;
-        
-        // Create hidden anchor and trigger immediate download
-        const link = document.createElement('a');
-        link.href = downloadUrl;
-        link.download = `grabit-youtube-${Date.now()}.mp4`;
-        link.style.display = 'none';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Show "Starting..." briefly then reset
-        setDownloadStatus('starting');
-        setTimeout(() => {
-          setDownloading(false);
-          setDownloadingFormat(null);
-          setDownloadStatus('idle');
-        }, 800);
-        return;
-      }
-      
-      // For other platforms - also use direct download
+      // For all platforms - use direct download
       const downloadUrl = `/api/download?url=${encodeURIComponent(urlToDownload)}&type=${media.type}`;
       
       // Create hidden anchor and trigger immediate download
@@ -230,7 +201,6 @@ export default function Home() {
     { name: 'Threads', color: 'bg-[#1a1a1a]', icon: 'M6.321 6.016c-.27-.18-1.166-.802-1.166-.802.756-1.081 1.753-1.502 3.132-1.502.975 0 1.803.327 2.394.948s.928 1.509 1.005 2.644q.492.207.905.484c1.109.745 1.719 1.86 1.719 3.137 0 2.716-2.226 5.075-6.256 5.075C4.594 16 1 13.987 1 7.994 1 2.034 4.482 0 8.044 0 9.69 0 13.55.243 15 5.036l-1.36.353C12.516 1.974 10.163 1.43 8.006 1.43c-3.565 0-5.582 2.171-5.582 6.79 0 4.143 2.254 6.343 5.63 6.343 2.777 0 4.847-1.443 4.847-3.556 0-1.438-1.208-2.127-1.27-2.127-.236 1.234-.868 3.31-3.644 3.31-1.618 0-3.013-1.118-3.013-2.582 0-2.09 1.984-2.847 3.55-2.847.586 0 1.294.04 1.663.114 0-.637-.54-1.728-1.9-1.728-1.25 0-1.566.405-1.967.868ZM8.716 8.19c-2.04 0-2.304.87-2.304 1.416 0 .878 1.043 1.168 1.6 1.168 1.02 0 2.067-.282 2.232-2.423a6.2 6.2 0 0 0-1.528-.161' },
     { name: 'LinkedIn', color: 'bg-[#6bcfff]', icon: 'M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z' },
     { name: 'Snapchat', color: 'bg-[#ffd93d]', icon: 'M12.206.793c.99 0 4.347.276 5.93 3.821.529 1.193.403 3.219.299 4.847l-.003.06c-.012.18-.022.345-.03.51.075.045.203.09.401.09.3-.016.659-.12 1.033-.301.165-.088.344-.104.464-.104.182 0 .359.029.509.09.45.149.734.479.734.838.015.449-.39.839-1.213 1.168-.089.029-.209.075-.344.119-.45.135-1.139.36-1.333.81-.09.224-.061.524.12.868l.015.015c.06.136 1.526 3.475 4.791 4.014.255.044.435.27.42.509 0 .075-.015.149-.045.225-.24.569-1.273.988-3.146 1.271-.059.091-.12.375-.164.57-.029.179-.074.36-.134.553-.076.271-.27.405-.555.405h-.03c-.135 0-.313-.031-.538-.074-.36-.075-.765-.135-1.273-.135-.3 0-.599.015-.913.074-.6.104-1.123.464-1.723.884-.853.599-1.826 1.288-3.294 1.288-.06 0-.119-.015-.18-.015h-.149c-1.468 0-2.427-.675-3.279-1.288-.599-.42-1.107-.779-1.707-.884-.314-.045-.629-.074-.928-.074-.54 0-.958.089-1.272.149-.211.043-.391.074-.54.074-.374 0-.523-.224-.583-.42-.061-.192-.09-.389-.135-.567-.046-.181-.105-.494-.166-.57-1.918-.222-2.95-.642-3.189-1.226-.031-.063-.052-.149-.052-.227.015-.195.168-.465.435-.531 3.236-.556 4.672-3.919 4.702-4.054.015-.015.028-.031.028-.044.029-.075.061-.134.074-.18.104-.225.179-.54.036-.838-.195-.434-.884-.658-1.332-.809-.121-.029-.24-.074-.346-.119-1.107-.435-1.257-.93-1.197-1.273.09-.479.674-.793 1.168-.793.146 0 .27.029.383.074.42.194.789.3 1.104.3.234 0 .384-.06.465-.105l-.046-.569c-.098-1.626-.225-3.651.307-4.837C7.392 1.077 10.739.807 11.727.807l.419-.015h.06z' },
-    { name: 'YouTube', color: 'bg-[#ef4444]', icon: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z' },
   ];
 
   return (
@@ -264,7 +234,7 @@ export default function Home() {
 
           {/* Description */}
           <p className="text-base sm:text-lg md:text-xl text-[#525252] max-w-2xl mx-auto font-medium px-4">
-            The ultimate social media video downloader. Works with Instagram, X, Threads, LinkedIn, Snapchat, and YouTube.
+            The ultimate social media video downloader. Works with Instagram, X, Threads, LinkedIn, and Snapchat.
           </p>
         </div>
 
@@ -353,25 +323,7 @@ export default function Home() {
             {/* Video/Image Preview */}
             <div className="bg-white border-2 sm:border-3 border-[#1a1a1a] overflow-hidden" style={{ boxShadow: '4px 4px 0px 0px #1a1a1a' }}>
               <div className="relative w-full bg-[#1a1a1a] flex items-center justify-center max-h-[70vh]">
-                {media.isYouTube ? (
-                  <div className="relative w-full">
-                    <img
-                      src={media.mediaUrl || media.thumbnail}
-                      alt={media.title || 'YouTube Video'}
-                      className="w-full h-auto max-h-[70vh] object-contain"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                      <div className="text-center space-y-4">
-                        <div className="w-20 h-20 mx-auto bg-[#ef4444] border-3 border-white flex items-center justify-center retro-shadow">
-                          <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M8 5v14l11-7z"/>
-                          </svg>
-                        </div>
-                        <p className="text-white text-lg font-bold">Select quality below</p>
-                      </div>
-                    </div>
-                  </div>
-                ) : media.type === 'video' ? (
+                {media.type === 'video' ? (
                   <video
                     controls
                     controlsList="nodownload"
@@ -412,12 +364,6 @@ export default function Home() {
                     {media.externalDownload && (
                       <p className="text-sm text-[#525252] bg-[#fef9c3] border-2 border-[#1a1a1a] p-3">
                         💡 Click the button below to open the download page. Select your preferred quality there.
-                      </p>
-                    )}
-                    {media.isYouTube && !media.externalDownload && (
-                      <p className="text-xs text-[#525252] bg-[#e8f5e9] border-2 border-[#1a1a1a] p-2 flex items-center gap-2">
-                        <span className="bg-[#98ee99] px-1.5 py-0.5 text-[10px] font-bold border border-[#1a1a1a]">🔊 Green</span> = with sound
-                        <span className="bg-[#ffd93d] px-1.5 py-0.5 text-[10px] font-bold border border-[#1a1a1a]">🔇 Yellow</span> = no sound
                       </p>
                     )}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -527,7 +473,7 @@ export default function Home() {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-black">Supported Platforms</h2>
               <p className="text-sm sm:text-base md:text-lg text-[#525252] font-medium">Download from your favorite social media platforms</p>
             </div>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 sm:gap-4 px-2">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 sm:gap-4 px-2">
               <div className="flex flex-col items-center gap-2 sm:gap-3 group">
                 <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#ff6b9d] border-2 sm:border-3 border-[#1a1a1a] flex items-center justify-center transition-all" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }} title="Instagram">
                   <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
@@ -567,14 +513,6 @@ export default function Home() {
                   </svg>
                 </div>
                 <span className="text-xs sm:text-sm font-bold">Snapchat</span>
-              </div>
-              <div className="flex flex-col items-center gap-2 sm:gap-3 group">
-                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#ef4444] border-2 sm:border-3 border-[#1a1a1a] flex items-center justify-center transition-all" style={{ boxShadow: '2px 2px 0px 0px #1a1a1a' }} title="YouTube">
-                  <svg className="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                </div>
-                <span className="text-xs sm:text-sm font-bold">YouTube</span>
               </div>
             </div>
           </div>
