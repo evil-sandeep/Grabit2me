@@ -1,4 +1,4 @@
-# GrabIt - Social Media Video Downloader
+# Grabit2me - Social Media Video Downloader
 
 A modern, production-ready Progressive Web App (PWA) for downloading videos and images from Instagram, X (Twitter), and Threads.
 
